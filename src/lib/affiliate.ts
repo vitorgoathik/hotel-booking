@@ -59,85 +59,12 @@ function hotelsComUrl(
 // to the homepage. IDs for the most-searched destinations are hardcoded below;
 // unknown cities fall back to textToSearch (may still land on homepage).
 // The full ID list is available from Agoda's affiliate data feed once enrolled.
+// Only include IDs verified against Agoda's affiliate data feed.
+// Wrong IDs cause "problem completing your search" errors.
+// For all other cities, textToSearch is used — dates/guests still pre-fill.
 const AGODA_CITY_IDS: Record<string, number> = {
-  // Southeast Asia
   "Bangkok": 6,
-  "Phuket": 305,
-  "Chiang Mai": 295,
-  "Pattaya": 1279,
-  "Koh Samui": 1458,
-  "Krabi": 9225,
-  "Hua Hin": 3031,
   "Singapore": 332,
-  "Kuala Lumpur": 955,
-  "Penang": 2054,
-  "Langkawi": 565,
-  "Bali": 1566,
-  "Jakarta": 1565,
-  "Yogyakarta": 1576,
-  "Lombok": 2205,
-  "Ho Chi Minh City": 604,
-  "Hanoi": 1159,
-  "Hoi An": 2185,
-  "Da Nang": 3115,
-  "Nha Trang": 2272,
-  "Siem Reap": 2153,
-  "Phnom Penh": 2158,
-  "Luang Prabang": 2187,
-  "Yangon": 1990,
-  "Manila": 658,
-  "Cebu": 1460,
-  "Boracay": 2354,
-  // East Asia
-  "Tokyo": 2933,
-  "Osaka": 1028,
-  "Kyoto": 1044,
-  "Hiroshima": 1019,
-  "Okinawa": 1029,
-  "Seoul": 1543,
-  "Busan": 3698,
-  "Jeju": 2551,
-  "Beijing": 2,
-  "Shanghai": 3,
-  "Hong Kong": 8727,
-  "Taipei": 3647,
-  "Macau": 1549,
-  // South Asia
-  "Mumbai": 1521,
-  "Delhi": 1522,
-  "Goa": 3093,
-  "Jaipur": 5487,
-  "Colombo": 1960,
-  "Maldives": 1958,
-  "Kathmandu": 3280,
-  // Middle East
-  "Dubai": 2015,
-  "Abu Dhabi": 2016,
-  "Doha": 2182,
-  // Europe
-  "London": 4583,
-  "Paris": 17563,
-  "Rome": 16281,
-  "Barcelona": 13047,
-  "Amsterdam": 13089,
-  "Berlin": 11798,
-  "Prague": 14273,
-  "Vienna": 16030,
-  "Lisbon": 8315,
-  "Madrid": 13054,
-  "Athens": 11737,
-  "Budapest": 11890,
-  "Istanbul": 2622,
-  // Americas
-  "New York": 1,
-  "Los Angeles": 18813,
-  "Miami": 18799,
-  "Las Vegas": 18784,
-  "Cancun": 6781,
-  // Oceania
-  "Sydney": 19295,
-  "Melbourne": 21400,
-  "Auckland": 22000,
 };
 
 function agodaUrl(
