@@ -40,14 +40,14 @@ function hotelsComUrl(
 ): string {
   const cid = process.env.NEXT_PUBLIC_HOTELSCOM_CID;
   const params = new URLSearchParams({
-    "q-destination": city,
-    "q-check-in": checkin,
-    "q-check-out": checkout,
-    "q-rooms": String(rooms),
-    "q-room-0-adults": String(guests),
+    destination: city,
+    startDate: checkin,
+    endDate: checkout,
+    adults: String(guests),
+    rooms: String(rooms),
     ...(cid ? { cid } : {}),
   });
-  return `https://www.hotels.com/search.do?${params}`;
+  return `https://www.hotels.com/Hotel-Search?${params}`;
 }
 
 // ── Agoda ──────────────────────────────────────────────────────────────────────
@@ -62,14 +62,15 @@ function agodaUrl(
 ): string {
   const cid = process.env.NEXT_PUBLIC_AGODA_CID;
   const params = new URLSearchParams({
-    city,
+    textToSearch: city,
     checkIn: checkin,
     checkOut: checkout,
     rooms: String(rooms),
     adults: String(guests),
+    children: "0",
     ...(cid ? { cid } : {}),
   });
-  return `https://www.agoda.com/search?${params}`;
+  return `https://www.agoda.com/en-us/search?${params}`;
 }
 
 // ── Google Hotels ──────────────────────────────────────────────────────────────

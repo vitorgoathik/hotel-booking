@@ -10,9 +10,17 @@ export const POPULAR_DESTINATIONS: Destination[] = [
   { slug: "barcelona", city: "Barcelona", country: "Spain", region: "Europe", minPrice: 59, hotelCount: 731 },
   { slug: "bali", city: "Bali", country: "Indonesia", region: "Asia", minPrice: 39, hotelCount: 865 },
   { slug: "bangkok", city: "Bangkok", country: "Thailand", region: "Asia", minPrice: 29, hotelCount: 1102 },
+  { slug: "phuket", city: "Phuket", country: "Thailand", region: "Asia", minPrice: 35, hotelCount: 824 },
   { slug: "sydney", city: "Sydney", country: "Australia", region: "Oceania", minPrice: 89, hotelCount: 612 },
   { slug: "singapore", city: "Singapore", country: "Singapore", region: "Asia", minPrice: 99, hotelCount: 543 },
   { slug: "amsterdam", city: "Amsterdam", country: "Netherlands", region: "Europe", minPrice: 79, hotelCount: 589 },
+  { slug: "istanbul", city: "Istanbul", country: "Turkey", region: "Europe", minPrice: 45, hotelCount: 1038 },
+  { slug: "cancun", city: "Cancun", country: "Mexico", region: "North America", minPrice: 49, hotelCount: 467 },
+  { slug: "maldives", city: "Maldives", country: "Maldives", region: "Asia", minPrice: 199, hotelCount: 312 },
+  { slug: "prague", city: "Prague", country: "Czech Republic", region: "Europe", minPrice: 42, hotelCount: 763 },
+  { slug: "lisbon", city: "Lisbon", country: "Portugal", region: "Europe", minPrice: 55, hotelCount: 618 },
+  { slug: "miami", city: "Miami", country: "United States", region: "North America", minPrice: 89, hotelCount: 534 },
+  { slug: "los-angeles", city: "Los Angeles", country: "United States", region: "North America", minPrice: 109, hotelCount: 721 },
 ];
 
 const HOTEL_NAME_TEMPLATES = [

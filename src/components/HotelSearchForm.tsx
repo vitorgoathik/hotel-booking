@@ -35,11 +35,19 @@ function DestinationInput({
   const [query, setQuery] = useState(value);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const matches = POPULAR_DESTINATIONS.filter(
-    (d) =>
-      d.city.toLowerCase().startsWith(query.toLowerCase()) ||
-      d.country.toLowerCase().startsWith(query.toLowerCase())
-  ).slice(0, 6);
+  const trimmed = query.trim();
+  const matches = trimmed
+    ? POPULAR_DESTINATIONS.filter(
+        (d) =>
+          d.city.toLowerCase().includes(trimmed.toLowerCase()) ||
+          d.country.toLowerCase().includes(trimmed.toLowerCase())
+      ).slice(0, 6)
+    : POPULAR_DESTINATIONS.slice(0, 6);
+
+  const exactMatch = POPULAR_DESTINATIONS.some(
+    (d) => d.city.toLowerCase() === trimmed.toLowerCase()
+  );
+  const showCustomOption = trimmed.length > 0 && !exactMatch;
 
   useEffect(() => {
     setQuery(value);
@@ -76,7 +84,7 @@ function DestinationInput({
         onFocus={() => setOpen(true)}
         className={inputCls}
       />
-      {open && matches.length > 0 && (
+      {open && (matches.length > 0 || showCustomOption) && (
         <ul className="absolute z-50 mt-1 w-full overflow-hidden rounded-lg border border-slate-200 bg-white shadow-lg">
           {matches.map((d) => (
             <li key={d.slug}>
@@ -101,6 +109,26 @@ function DestinationInput({
               </button>
             </li>
           ))}
+          {showCustomOption && (
+            <li>
+              <button
+                type="button"
+                className="flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm hover:bg-amber-50 transition-colors border-t border-slate-100"
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  onChange(trimmed);
+                  setQuery(trimmed);
+                  setOpen(false);
+                }}
+              >
+                <span className="text-base">🔍</span>
+                <span className="text-slate-600">
+                  Search hotels in{" "}
+                  <span className="font-medium text-slate-900">{trimmed}</span>
+                </span>
+              </button>
+            </li>
+          )}
         </ul>
       )}
     </div>
