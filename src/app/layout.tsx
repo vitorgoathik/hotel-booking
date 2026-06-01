@@ -141,6 +141,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
                   <li><span className="text-slate-400">Cancellation policy</span></li>
                   <li><span className="text-slate-400">Travel insurance</span></li>
                   <li><span className="text-slate-400">Group bookings</span></li>
+                  <li><a href="mailto:support@bookingmole.com" className="hover:text-amber-600 transition-colors">support@bookingmole.com</a></li>
                 </ul>
               </div>
               <div>
