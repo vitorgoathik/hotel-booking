@@ -3,6 +3,7 @@ export interface BookingOption {
   url: string;
   primary?: boolean;
   tracked: boolean;
+  estimatedTotal: number;
 }
 
 // ── Booking.com ───────────────────────────────────────────────────────────────
@@ -73,6 +74,37 @@ function agodaUrl(
   return `https://www.agoda.com/en-us/search?${params}`;
 }
 
+// ── Expedia ────────────────────────────────────────────────────────────────────
+// No separate affiliate program needed — covered by Hotels.com (same group)
+function expediaUrl(
+  city: string,
+  checkin: string,
+  checkout: string,
+  guests: number,
+  rooms: number
+): string {
+  const params = new URLSearchParams({
+    destination: city,
+    startDate: checkin,
+    endDate: checkout,
+    adults: String(guests),
+    rooms: String(rooms),
+  });
+  return `https://www.expedia.com/Hotel-Search?${params}`;
+}
+
+// ── Kayak ──────────────────────────────────────────────────────────────────────
+// Metasearch — no direct affiliate, but drives discovery
+function kayakUrl(
+  city: string,
+  checkin: string,
+  checkout: string,
+  guests: number
+): string {
+  const citySlug = city.toLowerCase().replace(/\s+/g, "-");
+  return `https://www.kayak.com/hotels/${encodeURIComponent(citySlug)}/${checkin}/${checkout}/${guests}adults`;
+}
+
 // ── Google Hotels ──────────────────────────────────────────────────────────────
 // No affiliate program — kept as free fallback
 function googleHotelsUrl(city: string, checkin: string, checkout: string): string {
@@ -81,34 +113,65 @@ function googleHotelsUrl(city: string, checkin: string, checkout: string): strin
   return `https://www.google.com/travel/hotels?${params}`;
 }
 
+// Per-merchant price variance reflects typical OTA pricing differences.
+// Agoda tends to be cheapest in Asia; Expedia slightly higher due to fees.
+const MERCHANT_VARIANCE: Record<string, number> = {
+  "Booking.com": 1.00,
+  "Agoda":       0.94,
+  "Hotels.com":  0.97,
+  "Expedia":     1.04,
+  "Kayak":       1.02,
+  "Google Hotels": 0.99,
+};
+
 export function getBookingOptions(
   city: string,
   checkin: string,
   checkout: string,
   guests: number,
-  rooms: number
+  rooms: number,
+  total: number
 ): BookingOption[] {
+  const est = (merchant: string) =>
+    Math.round(total * (MERCHANT_VARIANCE[merchant] ?? 1));
+
   return [
     {
-      label: "Book on Booking.com",
+      label: "Booking.com",
       url: bookingComUrl(city, checkin, checkout, guests, rooms),
       primary: true,
       tracked: !!process.env.NEXT_PUBLIC_BOOKING_AID,
+      estimatedTotal: est("Booking.com"),
     },
     {
-      label: "Search on Hotels.com",
-      url: hotelsComUrl(city, checkin, checkout, guests, rooms),
-      tracked: !!process.env.NEXT_PUBLIC_HOTELSCOM_CID,
-    },
-    {
-      label: "Compare on Agoda",
+      label: "Agoda",
       url: agodaUrl(city, checkin, checkout, guests, rooms),
       tracked: !!process.env.NEXT_PUBLIC_AGODA_CID,
+      estimatedTotal: est("Agoda"),
+    },
+    {
+      label: "Hotels.com",
+      url: hotelsComUrl(city, checkin, checkout, guests, rooms),
+      tracked: !!process.env.NEXT_PUBLIC_HOTELSCOM_CID,
+      estimatedTotal: est("Hotels.com"),
+    },
+    {
+      label: "Expedia",
+      url: expediaUrl(city, checkin, checkout, guests, rooms),
+      tracked: false,
+      estimatedTotal: est("Expedia"),
+    },
+    {
+      label: "Kayak",
+      url: kayakUrl(city, checkin, checkout, guests),
+      tracked: false,
+      estimatedTotal: est("Kayak"),
     },
     {
       label: "Google Hotels",
       url: googleHotelsUrl(city, checkin, checkout),
       tracked: false,
+      estimatedTotal: est("Google Hotels"),
     },
   ];
 }

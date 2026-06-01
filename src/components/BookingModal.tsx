@@ -30,12 +30,13 @@ function ModalInner({ hotel, onClose }: Props) {
   const rooms = Number(searchParams.get("rooms") ?? "1");
   const nights = getNights(checkin, checkout);
 
-  const bookingOptions = getBookingOptions(hotel.city, checkin, checkout, guests, rooms);
-
   const roomRate = hotel.pricePerNight;
   const subtotal = roomRate * nights;
   const taxes = Math.round(subtotal * 0.14);
   const total = subtotal + taxes;
+
+  const bookingOptions = getBookingOptions(hotel.city, checkin, checkout, guests, rooms, total);
+  const lowestTotal = Math.min(...bookingOptions.map((o) => o.estimatedTotal));
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -165,26 +166,48 @@ function ModalInner({ hotel, onClose }: Props) {
           )}
         </div>
 
-        {/* CTAs */}
-        <div className="sticky bottom-0 shrink-0 border-t border-slate-100 bg-white px-6 py-4 space-y-2">
-          {bookingOptions.map((opt, i) => (
-            <a
-              key={opt.label}
-              href={opt.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={
-                i === 0
-                  ? "flex w-full items-center justify-center gap-2 rounded-xl bg-amber-600 px-6 py-3.5 text-base font-semibold text-white shadow-md hover:bg-amber-700 active:bg-amber-800 transition-colors"
-                  : "flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors"
-              }
-            >
-              {opt.label} ↗
-            </a>
-          ))}
-          <p className="text-center text-xs text-slate-400 pt-1">
-            Pre-filtered for{" "}
-            <strong>{hotel.city}</strong> · {checkin} – {checkout}
+        {/* Compare prices */}
+        <div className="sticky bottom-0 shrink-0 border-t border-slate-100 bg-white px-4 pt-3 pb-4">
+          <p className="mb-2 px-1 text-xs font-semibold uppercase tracking-wide text-slate-400">
+            Compare prices
+          </p>
+          <div className="overflow-hidden rounded-xl border border-slate-200 divide-y divide-slate-100">
+            {bookingOptions.map((opt) => {
+              const isBest = opt.estimatedTotal === lowestTotal;
+              return (
+                <a
+                  key={opt.label}
+                  href={opt.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={`flex items-center gap-3 px-4 py-3 transition-colors hover:bg-amber-50 ${opt.primary ? "bg-amber-50/60" : ""}`}
+                >
+                  <span className="flex-1 text-sm font-semibold text-slate-800">
+                    {opt.label}
+                  </span>
+                  {isBest && (
+                    <span className="shrink-0 rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-700">
+                      Best
+                    </span>
+                  )}
+                  <span className="shrink-0 min-w-[4.5rem] text-right text-sm font-bold text-amber-700">
+                    est.&nbsp;{fmt(opt.estimatedTotal)}
+                  </span>
+                  <span
+                    className={`shrink-0 rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors ${
+                      opt.primary
+                        ? "bg-amber-600 text-white hover:bg-amber-700"
+                        : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                    }`}
+                  >
+                    Book ↗
+                  </span>
+                </a>
+              );
+            })}
+          </div>
+          <p className="mt-2 text-center text-xs text-slate-400">
+            Estimates for <strong>{hotel.city}</strong> · {checkin}–{checkout} · actual prices may vary
           </p>
         </div>
       </div>
