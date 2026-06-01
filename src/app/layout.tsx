@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 import { headers } from "next/headers";
 import Link from "next/link";
+import { Analytics } from "@vercel/analytics/next";
 import { SITE_NAME, SITE_DESCRIPTION, SITE_URL, websiteJsonLd } from "@/lib/seo";
 import { getCurrencyForCountry } from "@/lib/currency";
 import { CurrencyProvider } from "@/components/CurrencyProvider";
@@ -154,6 +155,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
             </p>
           </div>
         </footer>
+        <Analytics />
       </body>
     </html>
   );
