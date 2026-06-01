@@ -180,7 +180,7 @@ function ModalInner({ hotel, onClose }: Props) {
                   href={opt.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className={`flex items-center gap-3 px-4 py-3 transition-colors hover:bg-amber-50 ${opt.primary ? "bg-amber-50/60" : ""}`}
+                  className={`flex items-center gap-3 px-4 py-3 transition-colors hover:bg-amber-50 ${isBest ? "bg-emerald-50/60" : ""}`}
                 >
                   <span className="flex-1 text-sm font-semibold text-slate-800">
                     {opt.label}
