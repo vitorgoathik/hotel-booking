@@ -55,29 +55,89 @@ function hotelsComUrl(
 // Apply at: agoda.com/partners/affiliateprogram.aspx
 // Your CID goes in NEXT_PUBLIC_AGODA_CID
 //
-// Agoda's search URL requires a numeric city ID — plain city names are ignored
-// and bounce to the homepage. IDs sourced from Agoda's affiliate deep-link docs.
+// Agoda search requires numeric city IDs — text names are ignored and bounce
+// to the homepage. IDs for the most-searched destinations are hardcoded below;
+// unknown cities fall back to textToSearch (may still land on homepage).
+// The full ID list is available from Agoda's affiliate data feed once enrolled.
 const AGODA_CITY_IDS: Record<string, number> = {
-  "Paris": 17563,
-  "New York": 1,
-  "Tokyo": 2933,
-  "London": 4583,
-  "Dubai": 2015,
-  "Rome": 16281,
-  "Barcelona": 13047,
-  "Bali": 1566,
+  // Southeast Asia
   "Bangkok": 6,
   "Phuket": 305,
-  "Sydney": 19295,
+  "Chiang Mai": 295,
+  "Pattaya": 1279,
+  "Koh Samui": 1458,
+  "Krabi": 9225,
+  "Hua Hin": 3031,
   "Singapore": 332,
-  "Amsterdam": 13089,
-  "Istanbul": 2622,
-  "Cancun": 6781,
+  "Kuala Lumpur": 955,
+  "Penang": 2054,
+  "Langkawi": 565,
+  "Bali": 1566,
+  "Jakarta": 1565,
+  "Yogyakarta": 1576,
+  "Lombok": 2205,
+  "Ho Chi Minh City": 604,
+  "Hanoi": 1159,
+  "Hoi An": 2185,
+  "Da Nang": 3115,
+  "Nha Trang": 2272,
+  "Siem Reap": 2153,
+  "Phnom Penh": 2158,
+  "Luang Prabang": 2187,
+  "Yangon": 1990,
+  "Manila": 658,
+  "Cebu": 1460,
+  "Boracay": 2354,
+  // East Asia
+  "Tokyo": 2933,
+  "Osaka": 1028,
+  "Kyoto": 1044,
+  "Hiroshima": 1019,
+  "Okinawa": 1029,
+  "Seoul": 1543,
+  "Busan": 3698,
+  "Jeju": 2551,
+  "Beijing": 2,
+  "Shanghai": 3,
+  "Hong Kong": 8727,
+  "Taipei": 3647,
+  "Macau": 1549,
+  // South Asia
+  "Mumbai": 1521,
+  "Delhi": 1522,
+  "Goa": 3093,
+  "Jaipur": 5487,
+  "Colombo": 1960,
   "Maldives": 1958,
+  "Kathmandu": 3280,
+  // Middle East
+  "Dubai": 2015,
+  "Abu Dhabi": 2016,
+  "Doha": 2182,
+  // Europe
+  "London": 4583,
+  "Paris": 17563,
+  "Rome": 16281,
+  "Barcelona": 13047,
+  "Amsterdam": 13089,
+  "Berlin": 11798,
   "Prague": 14273,
+  "Vienna": 16030,
   "Lisbon": 8315,
-  "Miami": 18799,
+  "Madrid": 13054,
+  "Athens": 11737,
+  "Budapest": 11890,
+  "Istanbul": 2622,
+  // Americas
+  "New York": 1,
   "Los Angeles": 18813,
+  "Miami": 18799,
+  "Las Vegas": 18784,
+  "Cancun": 6781,
+  // Oceania
+  "Sydney": 19295,
+  "Melbourne": 21400,
+  "Auckland": 22000,
 };
 
 function agodaUrl(
@@ -90,7 +150,9 @@ function agodaUrl(
   const cid = process.env.NEXT_PUBLIC_AGODA_CID;
   const cityId = AGODA_CITY_IDS[city];
   const params = new URLSearchParams({
-    ...(cityId ? { city: String(cityId), searchType: "city" } : { textToSearch: city }),
+    ...(cityId
+      ? { city: String(cityId), searchType: "city" }
+      : { textToSearch: city }),
     checkIn: checkin,
     checkOut: checkout,
     rooms: String(rooms),
@@ -102,7 +164,6 @@ function agodaUrl(
 }
 
 // ── Expedia ────────────────────────────────────────────────────────────────────
-// No separate affiliate program needed — covered by Hotels.com (same group)
 function expediaUrl(
   city: string,
   checkin: string,
@@ -121,33 +182,33 @@ function expediaUrl(
 }
 
 // ── Kayak ──────────────────────────────────────────────────────────────────────
-// Metasearch — no direct affiliate, but drives discovery
 function kayakUrl(
   city: string,
   checkin: string,
   checkout: string,
   guests: number
 ): string {
-  const citySlug = city.toLowerCase().replace(/\s+/g, "-");
-  return `https://www.kayak.com/hotels/${encodeURIComponent(citySlug)}/${checkin}/${checkout}/${guests}adults`;
+  const slug = encodeURIComponent(city.toLowerCase().replace(/\s+/g, "-"));
+  return `https://www.kayak.com/hotels/${slug}/${checkin}/${checkout}/${guests}adults`;
 }
 
 // ── Google Hotels ──────────────────────────────────────────────────────────────
-// No affiliate program — kept as free fallback
 function googleHotelsUrl(city: string, checkin: string, checkout: string): string {
-  const q = `hotels in ${city}`;
-  const params = new URLSearchParams({ q, dates: `${checkin},${checkout}` });
+  const params = new URLSearchParams({
+    q: `hotels in ${city}`,
+    checkin,
+    checkout,
+  });
   return `https://www.google.com/travel/hotels?${params}`;
 }
 
 // Per-merchant price variance reflects typical OTA pricing differences.
-// Agoda tends to be cheapest in Asia; Expedia slightly higher due to fees.
 const MERCHANT_VARIANCE: Record<string, number> = {
-  "Booking.com": 1.00,
-  "Agoda":       0.94,
-  "Hotels.com":  0.97,
-  "Expedia":     1.04,
-  "Kayak":       1.02,
+  "Booking.com":   1.00,
+  "Agoda":         0.94,
+  "Hotels.com":    0.97,
+  "Expedia":       1.04,
+  "Kayak":         1.02,
   "Google Hotels": 0.99,
 };
 

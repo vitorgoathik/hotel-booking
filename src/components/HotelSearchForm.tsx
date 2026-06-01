@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { POPULAR_DESTINATIONS } from "@/lib/data";
+import { ALL_CITIES, POPULAR_DESTINATIONS } from "@/lib/data";
 
 interface FormState {
   destination: string;
@@ -37,14 +37,14 @@ function DestinationInput({
 
   const trimmed = query.trim();
   const matches = trimmed
-    ? POPULAR_DESTINATIONS.filter(
+    ? ALL_CITIES.filter(
         (d) =>
           d.city.toLowerCase().includes(trimmed.toLowerCase()) ||
           d.country.toLowerCase().includes(trimmed.toLowerCase())
-      ).slice(0, 6)
-    : POPULAR_DESTINATIONS.slice(0, 6);
+      ).slice(0, 8)
+    : POPULAR_DESTINATIONS.slice(0, 8);
 
-  const exactMatch = POPULAR_DESTINATIONS.some(
+  const exactMatch = ALL_CITIES.some(
     (d) => d.city.toLowerCase() === trimmed.toLowerCase()
   );
   const showCustomOption = trimmed.length > 0 && !exactMatch;
