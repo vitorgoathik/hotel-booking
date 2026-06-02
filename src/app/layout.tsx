@@ -9,8 +9,7 @@ import { getLocale, getMessages, getTranslations } from "next-intl/server";
 import { SITE_NAME, SITE_DESCRIPTION, SITE_URL, websiteJsonLd } from "@/lib/seo";
 import { getCurrencyForCountry } from "@/lib/currency";
 import { CurrencyProvider } from "@/components/CurrencyProvider";
-import { LanguageSelector } from "@/components/LanguageSelector";
-import { ThaiFloatAd } from "@/components/ThaiFloatAd";
+import { LanguageSelector, RegionalFloatingAd } from "@burrowsoft/shared";
 import { detectCountry } from "@burrowsoft/shared";
 import "./globals.css";
 
@@ -120,7 +119,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
                   {t("deals")}
                 </Link>
               </div>
-              <LanguageSelector current={locale} />
+              <LanguageSelector locales={["en", "th"]} />
             </div>
           </nav>
         </header>
@@ -129,7 +128,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
           <CurrencyProvider currency={currency}>
             <main>{children}</main>
           </CurrencyProvider>
-          <ThaiFloatAd />
+          <RegionalFloatingAd />
         </NextIntlClientProvider>
 
         <footer className="mt-16 border-t border-slate-200 bg-white">
