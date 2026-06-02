@@ -1,14 +1,18 @@
 "use client";
 
+import { useTranslations } from "next-intl";
+
 interface Props {
-  providers: string[];
-  settled: string[];
-  failed: string[];
-  message?: string;
+  providers:  string[];
+  settled:    string[];
+  failed:     string[];
+  message?:   string;
   allSettled?: boolean;
 }
 
 export function HotelLoadingOverlay({ providers, settled, failed, message, allSettled }: Props) {
+  const t = useTranslations("loading");
+
   return (
     <div
       className={[
@@ -21,7 +25,7 @@ export function HotelLoadingOverlay({ providers, settled, failed, message, allSe
         <div className="flex items-center gap-3 mb-6">
           <div className="h-7 w-7 animate-spin rounded-full border-4 border-slate-200 border-t-amber-500 shrink-0" />
           <p className="font-semibold text-slate-800">
-            {message ?? "Finding the best hotels…"}
+            {message ?? t("finding")}
           </p>
         </div>
 
@@ -44,10 +48,10 @@ export function HotelLoadingOverlay({ providers, settled, failed, message, allSe
                   }`}
                 >
                   {errored
-                    ? `${p} unavailable`
+                    ? t("unavailable",     { provider: p })
                     : done
-                    ? `Hotels from ${p} loaded`
-                    : `Loading hotels from ${p}…`}
+                    ? t("loadedProvider",  { provider: p })
+                    : t("loadingProvider", { provider: p })}
                 </span>
               </div>
             );

@@ -1,0 +1,74 @@
+{
+  "nav": {
+    "home": "BookingMole",
+    "popularDestinations": "Popular Destinations",
+    "deals": "Deals"
+  },
+  "search": {
+    "destination": "Destination",
+    "checkin": "Check-in",
+    "checkout": "Check-out",
+    "guests": "Guests",
+    "rooms": "Rooms",
+    "searchButton": "Search Hotels"
+  },
+  "results": {
+    "hotelsIn": "Hotels in {destination}",
+    "nights": "{count, plural, one {# night} other {# nights}}",
+    "properties": "{count, plural, one {# property} other {# properties}}",
+    "noneFound": "No hotels found for this destination",
+    "tryAgain": "Try a different city or dates",
+    "searchAgain": "Search again",
+    "pricesAsOf": "Prices as of {time}",
+    "livePrices": "· ✓ Live prices from Booking.com",
+    "perNight": "per night",
+    "total": "{price} total ({count} {count, plural, one {night} other {nights}})",
+    "bookOn": "Book on {provider} ↗",
+    "compareAll": "Compare all prices",
+    "viewMap": "View on map ↗",
+    "roomsLeft": "{count, plural, one {⚡ # room left} other {⚡ # rooms left}}",
+    "freeCancellation": "✓ Free cancellation",
+    "breakfastIncluded": "☕ Breakfast included"
+  },
+  "loading": {
+    "finding": "Finding the best hotels…",
+    "fetching": "Fetching up-to-date prices…",
+    "loadingProvider": "Loading hotels from {provider}…",
+    "loadedProvider": "Hotels from {provider} loaded",
+    "unavailable": "{provider} unavailable"
+  },
+  "modal": {
+    "title": "Hotel Summary",
+    "checkin": "Check-in",
+    "checkout": "Check-out",
+    "nights": "{count, plural, one {# night} other {# nights}}",
+    "guests": "{count, plural, one {# guest} other {# guests}}",
+    "rooms": "{count, plural, one {# room} other {# rooms}}",
+    "amenities": "Amenities",
+    "noAmenities": "No amenity data available",
+    "reviews": "Guest Reviews",
+    "verifiedReviews": "{count} verified reviews",
+    "availableRooms": "Available Rooms",
+    "bestPrice": "Best price",
+    "upTo": "up to {count}",
+    "freeCancel": "✓ Free cancel",
+    "breakfast": "☕ Breakfast",
+    "livePrice": "Live price · Direct property link",
+    "estimatedPrice": "Estimated price",
+    "book": "Book ↗",
+    "otherPlatforms": "Search on other platforms",
+    "searchLink": "Search ↗",
+    "liveNote": "Booking.com shows this exact property. Other platforms search the destination.",
+    "searchNote": "All links search for hotels in {city} with your selected dates.",
+    "taxes": "Taxes & fees (est.)",
+    "total": "Total",
+    "originalPrice": "Original price",
+    "liveConfirm": "✓ Live price from Booking.com",
+    "cheapestRoom": "Based on cheapest available room",
+    "roomsLeft": "⚡ Only {count} {count, plural, one {room} other {rooms}} left"
+  },
+  "footer": {
+    "tagline": "Compare hundreds of hotels worldwide. No hidden fees.",
+    "copyright": "© 2025 BurrowSoft. All rights reserved."
+  }
+}

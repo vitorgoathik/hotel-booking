@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
+import { useTranslations } from "next-intl";
 import type { Hotel } from "@/lib/types";
 import { SearchResults } from "./SearchResults";
 import { HotelLoadingOverlay } from "./HotelLoadingOverlay";
@@ -22,6 +23,9 @@ const REFRESH_MS   = 5 * 60 * 1000;
 export function SearchPageClient({
   destination, country, checkin, checkout, guests, rooms, nights,
 }: Props) {
+  const t = useTranslations("results");
+  const tl = useTranslations("loading");
+
   const [hotels,       setHotels]       = useState<Hotel[]>([]);
   const [isReal,       setIsReal]       = useState(false);
   const [initialLoad,  setInitialLoad]  = useState(true);
@@ -36,7 +40,7 @@ export function SearchPageClient({
 
   const fetchHotels = useCallback(async (isRefresh = false) => {
     if (isRefresh) {
-      setOverlayMsg("Fetching up-to-date prices…");
+      setOverlayMsg(tl("fetching"));
       setOverlayOn(true);
       setAllSettled(false);
     }
@@ -73,7 +77,7 @@ export function SearchPageClient({
       setAllSettled(true);
       if (isRefresh && loadedAt) {
         const hhmm = loadedAt.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
-        setToastMsg(`Prices could not be refreshed — last updated at ${hhmm}`);
+        setToastMsg(`${tl("unavailable", { provider: "Booking.com" })} — last updated at ${hhmm}`);
       } else {
         setHotels(generateHotels(destination, checkin));
         setIsReal(false);
@@ -126,10 +130,11 @@ export function SearchPageClient({
 
       {loadedAt && (
         <p className="mb-4 text-xs text-slate-400">
-          Prices as of{" "}
-          {loadedAt.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}
+          {t("pricesAsOf", {
+            time: loadedAt.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" }),
+          })}
           {isReal && (
-            <span className="ml-2 font-medium text-emerald-600">· ✓ Live prices from Booking.com</span>
+            <span className="ml-2 font-medium text-emerald-600">{t("livePrices")}</span>
           )}
         </p>
       )}
@@ -147,8 +152,8 @@ export function SearchPageClient({
           />
         ) : (
           <div className="rounded-xl border border-dashed border-slate-200 py-20 text-center">
-            <p className="text-lg font-medium text-slate-400">No hotels found for this destination</p>
-            <p className="mt-2 text-sm text-slate-400">Try a different city or dates</p>
+            <p className="text-lg font-medium text-slate-400">{t("noneFound")}</p>
+            <p className="mt-2 text-sm text-slate-400">{t("tryAgain")}</p>
           </div>
         )
       )}

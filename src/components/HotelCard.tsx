@@ -1,16 +1,17 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import type { Hotel } from "@/lib/types";
 import { getRatingLabel } from "@/lib/data";
 import { Price } from "./Price";
 
 interface HotelCardProps {
-  hotel: Hotel;
-  nights: number;
-  checkin: string;
+  hotel:    Hotel;
+  nights:   number;
+  checkin:  string;
   checkout: string;
-  guests: number;
-  rooms: number;
+  guests:   number;
+  rooms:    number;
   onSelect: (hotel: Hotel) => void;
 }
 
@@ -45,13 +46,13 @@ function bookingComDeepLink(
 ): string {
   const aid = process.env.NEXT_PUBLIC_BOOKING_AID;
   const params = new URLSearchParams({
-    ss: hotel.city,
+    ss:           hotel.city,
     checkin,
     checkout,
     group_adults: String(guests),
-    no_rooms: String(rooms),
-    lang: "en-us",
-    ...(hotel.bookingComId  ? { highlighted_hotels: String(hotel.bookingComId) } : {}),
+    no_rooms:     String(rooms),
+    lang:         "en-us",
+    ...(hotel.bookingComId    ? { highlighted_hotels: String(hotel.bookingComId) }      : {}),
     ...(hotel.bookingComDestId ? { dest_id: hotel.bookingComDestId, dest_type: "city" } : {}),
     ...(aid ? { aid } : {}),
   });
@@ -66,6 +67,7 @@ function mapUrl(hotel: Hotel): string {
 }
 
 export function HotelCard({ hotel, nights, checkin, checkout, guests, rooms, onSelect }: HotelCardProps) {
+  const t           = useTranslations("results");
   const ratingLabel = getRatingLabel(hotel.rating);
   const bookUrl     = bookingComDeepLink(hotel, checkin, checkout, guests, rooms);
 
@@ -75,7 +77,7 @@ export function HotelCard({ hotel, nights, checkin, checkout, guests, rooms, onS
       <div className="hidden sm:flex w-2 shrink-0 bg-amber-500 rounded-l-xl" />
 
       <div className="flex flex-1 flex-col sm:flex-row gap-4 p-4">
-        {/* Real photo (when available from API) */}
+        {/* Real photo */}
         {hotel.photoUrl && (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -121,7 +123,7 @@ export function HotelCard({ hotel, nights, checkin, checkout, guests, rooms, onS
               rel="noopener noreferrer"
               className="text-xs text-amber-600 hover:underline"
             >
-              View on map ↗
+              {t("viewMap")}
             </a>
           </div>
 
@@ -142,12 +144,12 @@ export function HotelCard({ hotel, nights, checkin, checkout, guests, rooms, onS
           <div className="mt-2 flex flex-wrap gap-2">
             {hotel.freeCancellation && (
               <span className="rounded-md bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700">
-                ✓ Free cancellation
+                {t("freeCancellation")}
               </span>
             )}
             {hotel.breakfastIncluded && (
               <span className="rounded-md bg-sky-50 px-2 py-0.5 text-xs font-medium text-sky-700">
-                ☕ Breakfast included
+                {t("breakfastIncluded")}
               </span>
             )}
           </div>
@@ -164,7 +166,7 @@ export function HotelCard({ hotel, nights, checkin, checkout, guests, rooms, onS
             <p className="text-2xl font-extrabold text-amber-600">
               <Price usd={hotel.pricePerNight} />
             </p>
-            <p className="text-xs text-slate-400">per night</p>
+            <p className="text-xs text-slate-400">{t("perNight")}</p>
             {nights > 1 && (
               <p className="text-xs font-medium text-slate-600">
                 <Price usd={hotel.pricePerNight * nights} /> total ({nights} nights)
@@ -175,7 +177,7 @@ export function HotelCard({ hotel, nights, checkin, checkout, guests, rooms, onS
           <div className="space-y-1.5 w-full">
             {hotel.roomsLeft <= 5 && (
               <p className="text-xs font-medium text-red-500 text-center">
-                ⚡ {hotel.roomsLeft} room{hotel.roomsLeft > 1 ? "s" : ""} left
+                {t("roomsLeft", { count: hotel.roomsLeft })}
               </p>
             )}
 
@@ -186,7 +188,7 @@ export function HotelCard({ hotel, nights, checkin, checkout, guests, rooms, onS
               rel="noopener noreferrer"
               className="block w-full rounded-xl bg-amber-600 px-4 py-2.5 text-center text-sm font-semibold text-white hover:bg-amber-700 active:bg-amber-800 transition-colors whitespace-nowrap"
             >
-              Book on Booking.com ↗
+              {t("bookOn", { provider: "Booking.com" })}
             </a>
 
             {/* Secondary: full comparison modal */}
@@ -194,7 +196,7 @@ export function HotelCard({ hotel, nights, checkin, checkout, guests, rooms, onS
               onClick={() => onSelect(hotel)}
               className="block w-full rounded-xl border border-slate-200 bg-white px-4 py-2 text-center text-xs font-medium text-slate-600 hover:bg-slate-50 transition-colors"
             >
-              Compare all prices
+              {t("compareAll")}
             </button>
           </div>
         </div>

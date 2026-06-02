@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { HotelSearchForm } from "@/components/HotelSearchForm";
 import { SearchPageClient } from "@/components/SearchPageClient";
 import { getNights, ALL_CITIES } from "@/lib/data";
@@ -36,6 +37,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
     (c) => c.city.toLowerCase() === destination.toLowerCase(),
   );
   const country = destMeta?.country ?? "";
+  const t = await getTranslations("results");
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-6">
@@ -56,10 +58,10 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
       {/* Results heading */}
       <div className="mb-4">
         <h1 className="text-xl font-bold text-slate-900">
-          Hotels in {destination}
+          {t("hotelsIn", { destination })}
           {checkin && checkout && (
             <span className="ml-2 text-base font-normal text-slate-500">
-              · {checkin} – {checkout} · {nights} night{nights !== 1 ? "s" : ""}
+              · {checkin} – {checkout} · {t("nights", { count: nights })}
             </span>
           )}
         </h1>

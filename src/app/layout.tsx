@@ -2,12 +2,23 @@ import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 import { headers } from "next/headers";
 import Link from "next/link";
+import { Sarabun } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
+import { NextIntlClientProvider } from "next-intl";
+import { getLocale, getMessages, getTranslations } from "next-intl/server";
 import { SITE_NAME, SITE_DESCRIPTION, SITE_URL, websiteJsonLd } from "@/lib/seo";
 import { getCurrencyForCountry } from "@/lib/currency";
 import { CurrencyProvider } from "@/components/CurrencyProvider";
+import { LanguageSelector } from "@/components/LanguageSelector";
 import { detectCountry } from "@burrowsoft/shared";
 import "./globals.css";
+
+const sarabun = Sarabun({
+  subsets: ["thai", "latin"],
+  weight: ["400", "600", "700"],
+  variable: "--font-sarabun",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -42,7 +53,6 @@ export const metadata: Metadata = {
     title: `${SITE_NAME} — Compare & Book Hotels Worldwide`,
     description: SITE_DESCRIPTION,
   },
-  other: { "google-adsense-account": "ca-pub-1009857008755875" },
   robots: {
     index: true,
     follow: true,
@@ -63,12 +73,16 @@ export const viewport: Viewport = {
 };
 
 export default async function RootLayout({ children }: { children: ReactNode }) {
-  const hdrs = await headers();
-  const country = detectCountry(Object.fromEntries(hdrs.entries()));
+  const hdrs     = await headers();
+  const country  = detectCountry(Object.fromEntries(hdrs.entries()));
   const currency = getCurrencyForCountry(country);
+  const locale   = await getLocale();
+  const messages = await getMessages();
+  const t        = await getTranslations("nav");
+  const tf       = await getTranslations("footer");
 
   return (
-    <html lang="en">
+    <html lang={locale} className={sarabun.variable}>
       <head>
         <meta name="agd-partner-manual-verification" />
         <script
@@ -83,7 +97,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
           />
         )}
       </head>
-      <body className="min-h-screen bg-slate-50 text-slate-900 antialiased">
+      <body className={`${sarabun.className} min-h-screen bg-slate-50 text-slate-900 antialiased`}>
         <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/95 backdrop-blur">
           <nav
             className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3"
@@ -91,32 +105,37 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
           >
             <Link href="/" className="flex items-center gap-2 font-bold text-amber-600 text-xl">
               <span aria-hidden>🏨</span>
-              {SITE_NAME}
+              {t("home")}
             </Link>
-            <div className="hidden sm:flex items-center gap-6 text-sm font-medium text-slate-600">
-              <Link href="/hotels/paris" className="hover:text-amber-600 transition-colors">
-                Popular Destinations
-              </Link>
-              <Link
-                href="/search?destination=Paris&checkin=2025-12-25&checkout=2025-12-28&guests=2&rooms=1"
-                className="hover:text-amber-600 transition-colors"
-              >
-                Deals
-              </Link>
+            <div className="flex items-center gap-4">
+              <div className="hidden sm:flex items-center gap-6 text-sm font-medium text-slate-600">
+                <Link href="/hotels/paris" className="hover:text-amber-600 transition-colors">
+                  {t("popularDestinations")}
+                </Link>
+                <Link
+                  href="/search?destination=Paris&checkin=2025-12-25&checkout=2025-12-28&guests=2&rooms=1"
+                  className="hover:text-amber-600 transition-colors"
+                >
+                  {t("deals")}
+                </Link>
+              </div>
+              <LanguageSelector current={locale} />
             </div>
           </nav>
         </header>
 
-        <CurrencyProvider currency={currency}>
-          <main>{children}</main>
-        </CurrencyProvider>
+        <NextIntlClientProvider messages={messages}>
+          <CurrencyProvider currency={currency}>
+            <main>{children}</main>
+          </CurrencyProvider>
+        </NextIntlClientProvider>
 
         <footer className="mt-16 border-t border-slate-200 bg-white">
           <div className="mx-auto max-w-7xl px-4 py-10">
             <div className="grid grid-cols-2 gap-8 sm:grid-cols-4">
               <div>
                 <h3 className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
-                  Popular Destinations
+                  {t("popularDestinations")}
                 </h3>
                 <ul className="space-y-2 text-sm text-slate-600">
                   <li><Link href="/hotels/paris" className="hover:text-amber-600">Hotels in Paris</Link></li>
@@ -149,9 +168,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
               </div>
               <div>
                 <p className="text-sm font-bold text-amber-600">{SITE_NAME}</p>
-                <p className="mt-1 text-xs text-slate-400">
-                  Compare hundreds of hotels worldwide. No hidden fees.
-                </p>
+                <p className="mt-1 text-xs text-slate-400">{tf("tagline")}</p>
               </div>
             </div>
 
@@ -174,7 +191,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
                   <li><a href="https://gamesmole.com" target="_blank" rel="noopener noreferrer" className="hover:text-amber-600 transition-colors">GamesMole</a></li>
                   <li><a href="https://shoppingmole.com" target="_blank" rel="noopener noreferrer" className="hover:text-amber-600 transition-colors">ShoppingMole</a></li>
                 </ul>
-                <p className="text-xs text-slate-400">© 2025 BurrowSoft. All rights reserved.</p>
+                <p className="text-xs text-slate-400">{tf("copyright")}</p>
               </div>
             </div>
           </div>

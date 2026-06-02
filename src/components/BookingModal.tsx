@@ -2,6 +2,7 @@
 
 import { useEffect, useReducer, Suspense, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import type { Hotel } from "@/lib/types";
 import { getNights } from "@/lib/data";
 import { getBookingOptions } from "@/lib/affiliate";
@@ -125,6 +126,7 @@ function amenityIcon(name: string) { return AMENITY_ICONS[name] ?? "✓"; }
 
 function ModalInner({ hotel, onClose }: { hotel: Hotel; onClose: () => void }) {
   const fmt          = useFormatPrice();
+  const t            = useTranslations("modal");
   const searchParams = useSearchParams();
 
   const checkin  = searchParams.get("checkin")  ?? new Date(Date.now() + 86400000).toISOString().split("T")[0] ?? "";
@@ -201,7 +203,7 @@ function ModalInner({ hotel, onClose }: { hotel: Hotel; onClose: () => void }) {
 
         {/* ── Header ── */}
         <div className="sticky top-0 z-10 flex shrink-0 items-center justify-between rounded-t-2xl border-b border-slate-100 bg-white px-6 py-4">
-          <h2 id="modal-title" className="text-lg font-bold text-slate-900">Hotel Summary</h2>
+          <h2 id="modal-title" className="text-lg font-bold text-slate-900">{t("title")}</h2>
           <button
             onClick={onClose}
             className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors"
@@ -235,16 +237,16 @@ function ModalInner({ hotel, onClose }: { hotel: Hotel; onClose: () => void }) {
             <div className="flex items-center gap-3 rounded-xl bg-slate-50 px-4 py-3">
               <div className="text-center">
                 <p className="text-sm font-bold text-slate-900">{checkin}</p>
-                <p className="text-xs text-slate-400">Check-in</p>
+                <p className="text-xs text-slate-400">{t("checkin")}</p>
               </div>
               <div className="flex flex-1 flex-col items-center gap-1">
-                <p className="text-xs text-slate-400">{nights} night{nights !== 1 ? "s" : ""}</p>
+                <p className="text-xs text-slate-400">{t("nights", { count: nights })}</p>
                 <div className="h-px w-full bg-slate-300" />
-                <p className="text-xs text-slate-500">{guests} guest{guests !== 1 ? "s" : ""} · {rooms} room{rooms !== 1 ? "s" : ""}</p>
+                <p className="text-xs text-slate-500">{t("guests", { count: guests })} · {t("rooms", { count: rooms })}</p>
               </div>
               <div className="text-center">
                 <p className="text-sm font-bold text-slate-900">{checkout}</p>
-                <p className="text-xs text-slate-400">Check-out</p>
+                <p className="text-xs text-slate-400">{t("checkout")}</p>
               </div>
             </div>
 
@@ -252,33 +254,33 @@ function ModalInner({ hotel, onClose }: { hotel: Hotel; onClose: () => void }) {
             <div className="space-y-2 rounded-xl border border-slate-100 px-4 py-3">
               {hotel.originalPrice && (
                 <div className="flex justify-between text-xs text-slate-400">
-                  <span>Original price</span>
+                  <span>{t("originalPrice")}</span>
                   <span className="line-through">{fmt(hotel.originalPrice)} / night</span>
                 </div>
               )}
               <div className="flex justify-between text-sm text-slate-600">
-                <span>{fmt(displayPrice)} × {nights} night{nights !== 1 ? "s" : ""}</span>
+                <span>{fmt(displayPrice)} × {t("nights", { count: nights })}</span>
                 <span>{fmt(subtotal)}</span>
               </div>
               <div className="flex justify-between text-sm text-slate-600">
-                <span>Taxes &amp; fees (est.)</span>
+                <span>{t("taxes")}</span>
                 <span>{fmt(taxes)}</span>
               </div>
               <div className="flex justify-between border-t border-slate-100 pt-2 font-bold text-slate-900">
-                <span>Total</span>
+                <span>{t("total")}</span>
                 <span className="text-base">{fmt(total)}</span>
               </div>
               {isReal && (
-                <p className="text-xs text-emerald-600">✓ Live price from Booking.com</p>
+                <p className="text-xs text-emerald-600">{t("liveConfirm")}</p>
               )}
               {cheapestRoom && (
-                <p className="text-xs text-slate-400">Based on cheapest available room</p>
+                <p className="text-xs text-slate-400">{t("cheapestRoom")}</p>
               )}
             </div>
 
             {/* Amenities */}
             <div>
-              <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">Amenities</p>
+              <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">{t("amenities")}</p>
               {detailsLoading ? (
                 <div className="flex flex-wrap gap-1.5">
                   {[1,2,3,4,5].map((i) => <Skeleton key={i} className="h-6 w-20" />)}
@@ -292,7 +294,7 @@ function ModalInner({ hotel, onClose }: { hotel: Hotel; onClose: () => void }) {
                   ))}
                 </div>
               ) : (
-                <p className="text-xs text-slate-400">No amenity data available</p>
+                <p className="text-xs text-slate-400">{t("noAmenities")}</p>
               )}
             </div>
 
@@ -319,9 +321,9 @@ function ModalInner({ hotel, onClose }: { hotel: Hotel; onClose: () => void }) {
                     {details.reviews.score.toFixed(1)}
                   </span>
                   <div>
-                    <p className="text-sm font-semibold text-slate-800">Guest Reviews</p>
+                    <p className="text-sm font-semibold text-slate-800">{t("reviews")}</p>
                     <p className="text-xs text-slate-400">
-                      {details.reviews.count.toLocaleString()} verified reviews
+                      {t("verifiedReviews", { count: details.reviews.count.toLocaleString() })}
                     </p>
                   </div>
                   {/* Score bar */}
@@ -372,7 +374,7 @@ function ModalInner({ hotel, onClose }: { hotel: Hotel; onClose: () => void }) {
               </div>
             ) : (details?.rooms?.length ?? 0) > 0 ? (
               <div>
-                <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">Available Rooms</p>
+                <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">{t("availableRooms")}</p>
                 <div className="space-y-2">
                   {details!.rooms.slice(0, 5).map((room, i) => (
                     <div
@@ -387,12 +389,12 @@ function ModalInner({ hotel, onClose }: { hotel: Hotel; onClose: () => void }) {
                             {room.name}
                           </p>
                           <div className="mt-0.5 flex flex-wrap gap-x-2 gap-y-0.5">
-                            <span className="text-xs text-slate-500">👤 up to {room.maxOccupancy}</span>
+                            <span className="text-xs text-slate-500">{t("upTo", { count: room.maxOccupancy })}</span>
                             {room.freeCancellation && (
-                              <span className="text-xs text-emerald-600">✓ Free cancel</span>
+                              <span className="text-xs text-emerald-600">{t("freeCancel")}</span>
                             )}
                             {room.breakfast && (
-                              <span className="text-xs text-sky-600">☕ Breakfast</span>
+                              <span className="text-xs text-sky-600">{t("breakfast")}</span>
                             )}
                           </div>
                         </div>
@@ -405,7 +407,7 @@ function ModalInner({ hotel, onClose }: { hotel: Hotel; onClose: () => void }) {
                       </div>
                       {i === 0 && (
                         <span className="mt-1.5 inline-block rounded-full bg-amber-500 px-2 py-0.5 text-xs font-semibold text-white">
-                          Best price
+                          {t("bestPrice")}
                         </span>
                       )}
                     </div>
@@ -425,13 +427,13 @@ function ModalInner({ hotel, onClose }: { hotel: Hotel; onClose: () => void }) {
               >
                 <div>
                   <p className="text-xs text-slate-400 mb-0.5">
-                    {isReal ? "Live price · Direct property link" : "Estimated price"}
+                    {isReal ? t("livePrice") : t("estimatedPrice")}
                   </p>
                   <p className="text-base font-bold">{fmt(total)}</p>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-semibold">{opt.label}</span>
-                  <span className="rounded-lg bg-white/20 px-3 py-1.5 text-sm font-semibold">Book ↗</span>
+                  <span className="rounded-lg bg-white/20 px-3 py-1.5 text-sm font-semibold">{t("book")}</span>
                 </div>
               </a>
             ))}
@@ -439,7 +441,7 @@ function ModalInner({ hotel, onClose }: { hotel: Hotel; onClose: () => void }) {
             {/* Other platforms */}
             <div>
               <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">
-                Search on other platforms
+                {t("otherPlatforms")}
               </p>
               <div className="overflow-hidden rounded-xl border border-slate-200 divide-y divide-slate-100">
                 {options.filter((o) => !o.isBookingCom).map((opt) => (
@@ -452,7 +454,7 @@ function ModalInner({ hotel, onClose }: { hotel: Hotel; onClose: () => void }) {
                   >
                     <span className="text-sm font-semibold text-slate-800">{opt.label}</span>
                     <span className="rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-200 transition-colors">
-                      Search ↗
+                      {t("searchLink")}
                     </span>
                   </a>
                 ))}
@@ -460,9 +462,7 @@ function ModalInner({ hotel, onClose }: { hotel: Hotel; onClose: () => void }) {
             </div>
 
             <p className="text-center text-xs text-slate-400">
-              {isReal
-                ? "Booking.com shows this exact property. Other platforms search the destination."
-                : `All links search for hotels in ${hotel.city} with your selected dates.`}
+              {isReal ? t("liveNote") : t("searchNote", { city: hotel.city })}
             </p>
           </div>
         </div>

@@ -85,3 +85,51 @@ When locale is `th`, show Thai city suggestions in the destination autocomplete:
 
 ### 6. Sync packages/shared to all apps after changes
 After editing any shared hotel provider file, copy `packages/shared/` to: flight-booking, news-feed, rent-a-car, main-website, games, shopping.
+
+---
+
+## Brazil Region (country === "BR")
+
+### What the user needs to arrange
+
+| Platform | Registration | Notes |
+|---|---|---|
+| **Booking.com Affiliate (Awin)** | https://ui.awin.com/merchant-profile/18120 | 4% base commission. Already wired via `NEXT_PUBLIC_BOOKING_AID` — just ensure the AID is set on Vercel. |
+| **Expedia Affiliate (pt-BR)** | https://affiliates.expediagroup.com/pt-br/home | Variable commission. Brazilian affiliate portal. Add `NEXT_PUBLIC_EXPEDIA_AID` to Vercel. |
+| **Decolar.com** | Contact Decolar partner team | No public API. Deep-link affiliate only. Largest OTA in Brazil — critical CTA. |
+
+New env vars for Vercel (hotel-booking project):
+- `NEXT_PUBLIC_EXPEDIA_AID` (from Expedia affiliate)
+- `NEXT_PUBLIC_DECOLAR_AID` (if/when affiliate agreement is reached)
+
+### No new data provider needed for Brazil
+Booking.com (already wired) has strong Brazil inventory. Agoda does NOT have meaningful Brazil coverage — it's SEA-focused. For Brazil, the priority is:
+1. Booking.com (primary — already works)
+2. Expedia (secondary — affiliate redirect)
+3. Decolar.com (Brazilian users' preferred OTA — affiliate redirect)
+
+### ExpediaHotelAffiliate redirect
+Add Expedia to the booking CTA buttons in `HotelCard` and `BookingModal` when `country === "BR"`:
+```ts
+const expediaUrl = `https://www.expedia.com.br/Hotels/search?destination=${encodeURIComponent(hotel.city)}&checkIn=${checkIn}&checkOut=${checkOut}&adults=${guests}&affcid=${process.env.NEXT_PUBLIC_EXPEDIA_AID}`;
+```
+
+### Decolar.com affiliate redirect
+Add Decolar CTA when `country === "BR"`:
+```ts
+const decolarUrl = `https://www.decolar.com/shop/hotels/list/${encodeURIComponent(city)}/${checkIn}/${checkOut}/${guests}/1`;
+// Append affiliate params once agreement is in place
+```
+
+### Popular Brazilian hotel destinations
+When locale is `pt-BR`, show city suggestions:
+- Rio de Janeiro, São Paulo, Salvador, Fortaleza, Recife, Florianópolis, Natal, Manaus, Foz do Iguaçu, Belo Horizonte, Brasília, Gramado, Porto de Galinhas, Maceió, Curitiba
+
+### Update createHotelRouter country logic
+```ts
+// BR: Booking.com first (best Brazil inventory), skip Agoda
+if (country === "BR") {
+  if (process.env.RAPIDAPI_KEY) providers.push(new BookingComHotelProvider(...));
+  // Agoda not added for Brazil
+}
+```

@@ -1,0 +1,74 @@
+{
+  "nav": {
+    "home": "BookingMole",
+    "popularDestinations": "จุดหมายยอดนิยม",
+    "deals": "โปรโมชัน"
+  },
+  "search": {
+    "destination": "จุดหมายปลายทาง",
+    "checkin": "เช็คอิน",
+    "checkout": "เช็คเอาท์",
+    "guests": "ผู้เข้าพัก",
+    "rooms": "จำนวนห้อง",
+    "searchButton": "ค้นหาโรงแรม"
+  },
+  "results": {
+    "hotelsIn": "โรงแรมใน {destination}",
+    "nights": "{count} คืน",
+    "properties": "{count} แห่ง",
+    "noneFound": "ไม่พบโรงแรมสำหรับจุดหมายนี้",
+    "tryAgain": "ลองเปลี่ยนเมืองหรือวันที่",
+    "searchAgain": "ค้นหาอีกครั้ง",
+    "pricesAsOf": "ราคา ณ เวลา {time}",
+    "livePrices": "· ✓ ราคาสดจาก Booking.com",
+    "perNight": "ต่อคืน",
+    "total": "รวม {price} ({count} คืน)",
+    "bookOn": "จองที่ {provider} ↗",
+    "compareAll": "เปรียบเทียบราคาทั้งหมด",
+    "viewMap": "ดูบนแผนที่ ↗",
+    "roomsLeft": "⚡ เหลือ {count} ห้องเท่านั้น",
+    "freeCancellation": "✓ ยกเลิกได้ฟรี",
+    "breakfastIncluded": "☕ รวมอาหารเช้า"
+  },
+  "loading": {
+    "finding": "กำลังค้นหาโรงแรมที่ดีที่สุด…",
+    "fetching": "กำลังอัปเดตราคาล่าสุด…",
+    "loadingProvider": "กำลังโหลดโรงแรมจาก {provider}…",
+    "loadedProvider": "โหลดโรงแรมจาก {provider} แล้ว",
+    "unavailable": "{provider} ไม่พร้อมใช้งาน"
+  },
+  "modal": {
+    "title": "สรุปโรงแรม",
+    "checkin": "เช็คอิน",
+    "checkout": "เช็คเอาท์",
+    "nights": "{count} คืน",
+    "guests": "{count} ท่าน",
+    "rooms": "{count} ห้อง",
+    "amenities": "สิ่งอำนวยความสะดวก",
+    "noAmenities": "ไม่มีข้อมูลสิ่งอำนวยความสะดวก",
+    "reviews": "รีวิวจากแขก",
+    "verifiedReviews": "{count} รีวิวที่ยืนยันแล้ว",
+    "availableRooms": "ห้องพักที่ว่าง",
+    "bestPrice": "ราคาดีที่สุด",
+    "upTo": "รองรับ {count} ท่าน",
+    "freeCancel": "✓ ยกเลิกได้ฟรี",
+    "breakfast": "☕ รวมอาหารเช้า",
+    "livePrice": "ราคาสด · ลิงก์ตรงโรงแรม",
+    "estimatedPrice": "ราคาประมาณการ",
+    "book": "จอง ↗",
+    "otherPlatforms": "ค้นหาในแพลตฟอร์มอื่น",
+    "searchLink": "ค้นหา ↗",
+    "liveNote": "Booking.com แสดงโรงแรมนี้โดยตรง แพลตฟอร์มอื่นค้นหาในจุดหมาย",
+    "searchNote": "ทุกลิงก์ค้นหาโรงแรมใน {city} ตามวันที่ที่เลือก",
+    "taxes": "ภาษีและค่าธรรมเนียม (ประมาณการ)",
+    "total": "รวม",
+    "originalPrice": "ราคาเดิม",
+    "liveConfirm": "✓ ราคาสดจาก Booking.com",
+    "cheapestRoom": "คำนวณจากห้องพักราคาต่ำสุด",
+    "roomsLeft": "⚡ เหลือ {count} ห้องเท่านั้น"
+  },
+  "footer": {
+    "tagline": "เปรียบเทียบโรงแรมทั่วโลก ไม่มีค่าธรรมเนียมซ่อนเร้น",
+    "copyright": "© 2025 BurrowSoft สงวนลิขสิทธิ์"
+  }
+}
