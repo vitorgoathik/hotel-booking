@@ -152,9 +152,29 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
                 </p>
               </div>
             </div>
-            <p className="mt-8 border-t border-slate-100 pt-6 text-center text-xs text-slate-400">
-              © {new Date().getFullYear()} {SITE_NAME}. All rights reserved.
-            </p>
+
+            {/* BurrowSoft family */}
+            <div className="mt-8 border-t border-slate-100 pt-6">
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                <a
+                  href="https://burrowsoft.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 text-slate-600 hover:text-slate-900 transition-colors"
+                >
+                  <span className="text-lg" aria-hidden>🦔</span>
+                  <span className="text-sm font-bold tracking-tight">BurrowSoft</span>
+                </a>
+                <ul className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs text-slate-500">
+                  <li><a href="https://flymole.com" target="_blank" rel="noopener noreferrer" className="hover:text-amber-600 transition-colors">FlyMole</a></li>
+                  <li><a href="https://insightmole.com" target="_blank" rel="noopener noreferrer" className="hover:text-amber-600 transition-colors">InsightMole</a></li>
+                  <li><a href="https://rentacarmole.com" target="_blank" rel="noopener noreferrer" className="hover:text-amber-600 transition-colors">RentACarMole</a></li>
+                  <li><a href="https://gamesmole.com" target="_blank" rel="noopener noreferrer" className="hover:text-amber-600 transition-colors">GamesMole</a></li>
+                  <li><a href="https://shoppingmole.com" target="_blank" rel="noopener noreferrer" className="hover:text-amber-600 transition-colors">ShoppingMole</a></li>
+                </ul>
+                <p className="text-xs text-slate-400">© 2025 BurrowSoft. All rights reserved.</p>
+              </div>
+            </div>
           </div>
         </footer>
         <Analytics />

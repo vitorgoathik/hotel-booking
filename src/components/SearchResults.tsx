@@ -11,6 +11,8 @@ interface Props {
   destination: string;
   checkin: string;
   checkout: string;
+  guests: number;
+  rooms: number;
   nights: number;
 }
 
@@ -23,7 +25,7 @@ const AMENITY_FILTERS = [
   "Free Parking",
 ];
 
-export function SearchResults({ hotels, destination, checkin, checkout, nights }: Props) {
+export function SearchResults({ hotels, destination, checkin, checkout, guests, rooms, nights }: Props) {
   const [selected, setSelected] = useState<Hotel | null>(null);
   const [sort, setSort] = useState<SortOption>("price");
   const [maxPrice, setMaxPrice] = useState(500);
@@ -197,6 +199,10 @@ export function SearchResults({ hotels, destination, checkin, checkout, nights }
                     key={hotel.id}
                     hotel={hotel}
                     nights={nights}
+                    checkin={checkin}
+                    checkout={checkout}
+                    guests={guests}
+                    rooms={rooms}
                     onSelect={setSelected}
                   />
                   {idx === 2 && (

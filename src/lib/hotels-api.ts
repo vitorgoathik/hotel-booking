@@ -68,7 +68,8 @@ function mapHotel(
   );
 
   const photoUrls = (prop.photoUrls as string[] | undefined) ?? [];
-  const photoUrl  = photoUrls[0]?.replace("square500", "square1024");
+  const photos    = photoUrls.slice(0, 10).map((u) => u.replace("square500", "square1024"));
+  const photoUrl  = photos[0];
 
   return {
     id:               String(raw.hotel_id),
@@ -86,9 +87,12 @@ function mapHotel(
     freeCancellation,
     breakfastIncluded,
     roomsLeft,
+    latitude:         (prop.latitude  as number | undefined),
+    longitude:        (prop.longitude as number | undefined),
     bookingComId:     raw.hotel_id as number,
     bookingComDestId: destId,
     photoUrl,
+    photos,
   };
 }
 

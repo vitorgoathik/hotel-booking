@@ -7,6 +7,10 @@ import { Price } from "./Price";
 interface HotelCardProps {
   hotel: Hotel;
   nights: number;
+  checkin: string;
+  checkout: string;
+  guests: number;
+  rooms: number;
   onSelect: (hotel: Hotel) => void;
 }
 
@@ -32,8 +36,38 @@ const AMENITY_ICONS: Record<string, string> = {
   "Airport Shuttle": "🚌",
 };
 
-export function HotelCard({ hotel, nights, onSelect }: HotelCardProps) {
+function bookingComDeepLink(
+  hotel: Hotel,
+  checkin: string,
+  checkout: string,
+  guests: number,
+  rooms: number,
+): string {
+  const aid = process.env.NEXT_PUBLIC_BOOKING_AID;
+  const params = new URLSearchParams({
+    ss: hotel.city,
+    checkin,
+    checkout,
+    group_adults: String(guests),
+    no_rooms: String(rooms),
+    lang: "en-us",
+    ...(hotel.bookingComId  ? { highlighted_hotels: String(hotel.bookingComId) } : {}),
+    ...(hotel.bookingComDestId ? { dest_id: hotel.bookingComDestId, dest_type: "city" } : {}),
+    ...(aid ? { aid } : {}),
+  });
+  return `https://www.booking.com/searchresults.en.html?${params}`;
+}
+
+function mapUrl(hotel: Hotel): string {
+  if (hotel.latitude && hotel.longitude) {
+    return `https://www.google.com/maps/search/?api=1&query=${hotel.latitude},${hotel.longitude}`;
+  }
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(hotel.name + " " + hotel.city)}`;
+}
+
+export function HotelCard({ hotel, nights, checkin, checkout, guests, rooms, onSelect }: HotelCardProps) {
   const ratingLabel = getRatingLabel(hotel.rating);
+  const bookUrl     = bookingComDeepLink(hotel, checkin, checkout, guests, rooms);
 
   return (
     <article className="flex flex-col sm:flex-row gap-0 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition-all hover:shadow-md">
@@ -74,12 +108,22 @@ export function HotelCard({ hotel, nights, onSelect }: HotelCardProps) {
             </div>
           </div>
 
-          {/* Distance — only shown when real data provides it */}
-          {hotel.distanceToCenter > 0 && (
-            <p className="mt-2 text-xs text-slate-500">
-              📍 {hotel.distanceToCenter} km from city center
-            </p>
-          )}
+          {/* Distance + map link */}
+          <div className="mt-2 flex items-center gap-3">
+            {hotel.distanceToCenter > 0 && (
+              <p className="text-xs text-slate-500">
+                📍 {hotel.distanceToCenter} km from city center
+              </p>
+            )}
+            <a
+              href={mapUrl(hotel)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs text-amber-600 hover:underline"
+            >
+              View on map ↗
+            </a>
+          </div>
 
           {/* Amenities */}
           <div className="mt-2 flex flex-wrap gap-1.5">
@@ -109,8 +153,8 @@ export function HotelCard({ hotel, nights, onSelect }: HotelCardProps) {
           </div>
         </div>
 
-        {/* Price + CTA */}
-        <div className="sm:w-44 shrink-0 flex flex-row sm:flex-col items-center sm:items-end justify-between sm:justify-center gap-3 sm:gap-2 border-t sm:border-t-0 sm:border-l border-slate-100 pt-3 sm:pt-0 sm:pl-4">
+        {/* Price + CTAs */}
+        <div className="sm:w-48 shrink-0 flex flex-row sm:flex-col items-center sm:items-end justify-between sm:justify-center gap-3 sm:gap-2 border-t sm:border-t-0 sm:border-l border-slate-100 pt-3 sm:pt-0 sm:pl-4">
           <div className="text-left sm:text-right">
             {hotel.originalPrice && (
               <p className="text-xs text-slate-400 line-through">
@@ -128,17 +172,29 @@ export function HotelCard({ hotel, nights, onSelect }: HotelCardProps) {
             )}
           </div>
 
-          <div className="space-y-1.5">
+          <div className="space-y-1.5 w-full">
             {hotel.roomsLeft <= 5 && (
               <p className="text-xs font-medium text-red-500 text-center">
                 ⚡ {hotel.roomsLeft} room{hotel.roomsLeft > 1 ? "s" : ""} left
               </p>
             )}
+
+            {/* Primary: direct Booking.com link */}
+            <a
+              href={bookUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block w-full rounded-xl bg-amber-600 px-4 py-2.5 text-center text-sm font-semibold text-white hover:bg-amber-700 active:bg-amber-800 transition-colors whitespace-nowrap"
+            >
+              Book on Booking.com ↗
+            </a>
+
+            {/* Secondary: full comparison modal */}
             <button
               onClick={() => onSelect(hotel)}
-              className="w-full rounded-xl bg-amber-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-amber-700 active:bg-amber-800 transition-colors whitespace-nowrap"
+              className="block w-full rounded-xl border border-slate-200 bg-white px-4 py-2 text-center text-xs font-medium text-slate-600 hover:bg-slate-50 transition-colors"
             >
-              View Deal
+              Compare all prices
             </button>
           </div>
         </div>

@@ -149,6 +149,8 @@ export default async function DestinationPage({ params }: Props) {
           destination={dest.city}
           checkin={tomorrow}
           checkout={threeDaysLater}
+          guests={2}
+          rooms={1}
           nights={nights}
         />
       </div>
