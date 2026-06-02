@@ -82,5 +82,21 @@ Hotel prices and availability change regularly. Requirements:
 - If the refresh fails, show a small toast: "Prices could not be refreshed — last updated at HH:MM"
 - Always show a "Prices as of HH:MM" timestamp below the results header
 
-### 10. Sync shared to all apps after any provider changes
+### 10. Themed mascot — BookingMole
+Create `public/mascot.svg` — the base BurrowSoft Mole with a fancy cocktail glass held in one paw and a beach parasol in the other (both paws visible above the ledge). Same black line-art stroke style. SVG groups: `<g id="mole-base">` and `<g id="prop">`. ViewBox: `0 0 200 200`.
+
+### 11. App thumbnail / OG image
+- `public/og-image.png` — 1200×630px, BookingMole mascot centred on brand background, "BookingMole" wordmark below
+- `public/favicon.ico` — mole head only, 32×32 and 16×16
+- `public/apple-touch-icon.png` — 180×180px, mole head on brand background
+- Wire all into `src/app/layout.tsx` metadata
+
+### 12. Footer — BurrowSoft branding
+Add to the existing footer:
+- Small BurrowSoft logo (mole + wordmark) linking to burrowsoft.com
+- Links to sibling products: FlyMole, InsightMole, RentACarMole, GamesMole, ShoppingMole
+- Copyright: "© 2025 BurrowSoft. All rights reserved."
+Logo assets: copy `burrowsoft-logo.svg` from the main-website repo into `public/`.
+
+### 13. Sync shared to all apps after any provider changes
 After editing any file in `packages/shared/src/`, copy the entire `packages/shared/` folder to the same path in: flight-booking, news-feed, rent-a-car, main-website, games, shopping.
