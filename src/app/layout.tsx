@@ -42,6 +42,7 @@ export const metadata: Metadata = {
     title: `${SITE_NAME} — Compare & Book Hotels Worldwide`,
     description: SITE_DESCRIPTION,
   },
+  other: { "google-adsense-account": "ca-pub-1009857008755875" },
   robots: {
     index: true,
     follow: true,
