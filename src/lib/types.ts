@@ -23,6 +23,10 @@ export interface Hotel {
   freeCancellation: boolean;
   breakfastIncluded: boolean;
   roomsLeft: number;
+  // Real API fields — present when data comes from Booking.com via RapidAPI
+  bookingComId?: number;
+  bookingComDestId?: string;
+  photoUrl?: string;
 }
 
 export type SortOption = "price" | "rating" | "stars" | "distance";

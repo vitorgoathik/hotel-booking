@@ -35,8 +35,12 @@ function ModalInner({ hotel, onClose }: Props) {
   const taxes    = Math.round(subtotal * 0.14);
   const total    = subtotal + taxes;
 
-  const bookingOptions = getBookingOptions(hotel.city, checkin, checkout, guests, rooms, total);
-  const lowestTotal    = Math.min(...bookingOptions.map((o) => o.estimatedTotal));
+  const options = getBookingOptions(
+    hotel.city, checkin, checkout, guests, rooms,
+    hotel.bookingComId, hotel.bookingComDestId,
+  );
+
+  const isReal = !!hotel.bookingComId;
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
@@ -56,26 +60,14 @@ function ModalInner({ hotel, onClose }: Props) {
       aria-modal="true"
       aria-labelledby="modal-title"
     >
-      <div
-        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-        onClick={onClose}
-        aria-hidden="true"
-      />
+      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} aria-hidden="true" />
 
       <div className="relative flex w-full max-w-3xl flex-col rounded-t-2xl sm:rounded-2xl bg-white shadow-2xl max-h-[92dvh] sm:max-h-[90vh]">
 
         {/* Header */}
         <div className="sticky top-0 z-10 flex shrink-0 items-center justify-between rounded-t-2xl sm:rounded-t-2xl border-b border-slate-100 bg-white px-6 py-4">
-          <h2 id="modal-title" className="text-lg font-bold text-slate-900">
-            Hotel Summary
-          </h2>
-          <button
-            onClick={onClose}
-            className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors"
-            aria-label="Close"
-          >
-            ✕
-          </button>
+          <h2 id="modal-title" className="text-lg font-bold text-slate-900">Hotel Summary</h2>
+          <button onClick={onClose} className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors" aria-label="Close">✕</button>
         </div>
 
         {/* Body — two columns on md+ */}
@@ -84,11 +76,18 @@ function ModalInner({ hotel, onClose }: Props) {
           {/* Left: hotel details */}
           <div className="overflow-y-auto px-6 py-5 space-y-4 md:w-[45%] md:border-r border-slate-100 shrink-0">
 
-            {/* Hotel info */}
+            {/* Photo + name */}
             <div className="flex items-start gap-3">
-              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-2xl">
-                🏨
-              </div>
+              {hotel.photoUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={hotel.photoUrl}
+                  alt={hotel.name}
+                  className="h-14 w-14 shrink-0 rounded-xl object-cover"
+                />
+              ) : (
+                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-2xl">🏨</div>
+              )}
               <div>
                 <p className="font-semibold text-slate-900 leading-tight">{hotel.name}</p>
                 <StarRating stars={hotel.stars} />
@@ -105,9 +104,7 @@ function ModalInner({ hotel, onClose }: Props) {
               <div className="flex flex-1 flex-col items-center gap-1">
                 <p className="text-xs text-slate-400">{nights} night{nights !== 1 ? "s" : ""}</p>
                 <div className="h-px w-full bg-slate-300" />
-                <p className="text-xs font-medium text-slate-500">
-                  {guests} guest{guests !== 1 ? "s" : ""} · {rooms} room{rooms !== 1 ? "s" : ""}
-                </p>
+                <p className="text-xs text-slate-500">{guests} guest{guests !== 1 ? "s" : ""} · {rooms} room{rooms !== 1 ? "s" : ""}</p>
               </div>
               <div className="text-center">
                 <p className="text-sm font-bold text-slate-900">{checkout}</p>
@@ -117,6 +114,12 @@ function ModalInner({ hotel, onClose }: Props) {
 
             {/* Price breakdown */}
             <div className="space-y-2 rounded-xl border border-slate-100 px-4 py-3">
+              {hotel.originalPrice && (
+                <div className="flex justify-between text-xs text-slate-400">
+                  <span>Original price</span>
+                  <span className="line-through">{fmt(hotel.originalPrice)} / night</span>
+                </div>
+              )}
               <div className="flex justify-between text-sm text-slate-600">
                 <span>{fmt(roomRate)} × {nights} night{nights !== 1 ? "s" : ""}</span>
                 <span>{fmt(subtotal)}</span>
@@ -127,80 +130,88 @@ function ModalInner({ hotel, onClose }: Props) {
               </div>
               <div className="flex justify-between border-t border-slate-100 pt-2 font-bold text-slate-900">
                 <span>Total</span>
-                <span className="text-slate-900 text-base">{fmt(total)}</span>
+                <span className="text-base">{fmt(total)}</span>
               </div>
+              {isReal && (
+                <p className="text-xs text-emerald-600">✓ Live price from Booking.com</p>
+              )}
             </div>
-
-            {/* Amenities */}
-            {hotel.amenities.length > 0 && (
-              <div className="flex flex-wrap gap-1.5">
-                {hotel.amenities.map((a) => (
-                  <span key={a} className="rounded-full bg-slate-100 px-2.5 py-1 text-xs text-slate-600">
-                    ✓ {a}
-                  </span>
-                ))}
-              </div>
-            )}
 
             {/* Badges */}
             <div className="flex flex-wrap gap-2">
               {hotel.freeCancellation && (
-                <span className="rounded-md bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700">
-                  ✓ Free cancellation
-                </span>
+                <span className="rounded-md bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700">✓ Free cancellation</span>
               )}
               {hotel.breakfastIncluded && (
-                <span className="rounded-md bg-sky-50 px-3 py-1 text-xs font-medium text-sky-700">
-                  ☕ Breakfast included
-                </span>
+                <span className="rounded-md bg-sky-50 px-3 py-1 text-xs font-medium text-sky-700">☕ Breakfast included</span>
               )}
             </div>
 
+            {/* Amenities (only for generated data) */}
+            {hotel.amenities.length > 0 && (
+              <div className="flex flex-wrap gap-1.5">
+                {hotel.amenities.map((a) => (
+                  <span key={a} className="rounded-full bg-slate-100 px-2.5 py-1 text-xs text-slate-600">✓ {a}</span>
+                ))}
+              </div>
+            )}
+
             {hotel.roomsLeft <= 5 && (
-              <p className="text-sm font-medium text-red-500">
-                ⚡ Only {hotel.roomsLeft} room{hotel.roomsLeft > 1 ? "s" : ""} left
-              </p>
+              <p className="text-sm font-medium text-red-500">⚡ Only {hotel.roomsLeft} room{hotel.roomsLeft > 1 ? "s" : ""} left</p>
             )}
           </div>
 
-          {/* Right: compare prices */}
-          <div className="flex flex-col justify-between px-5 py-5 md:flex-1 border-t border-slate-100 md:border-t-0 shrink-0">
-            <div>
-              <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
-                Compare prices
-              </p>
-              <div className="overflow-hidden rounded-xl border border-slate-200 divide-y divide-slate-100">
-                {bookingOptions.map((opt) => {
-                  const isBest = opt.estimatedTotal === lowestTotal;
-                  return (
-                    <a
-                      key={opt.label}
-                      href={opt.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className={`flex items-center gap-3 px-4 py-3 transition-colors hover:bg-slate-50 ${isBest ? "bg-emerald-50/50" : ""}`}
-                    >
-                      <span className="flex-1 text-sm font-semibold text-slate-800">
-                        {opt.label}
-                      </span>
-                      {isBest && (
-                        <span className="shrink-0 rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-700">
-                          Best
-                        </span>
-                      )}
-                      <span className="shrink-0 min-w-[4.5rem] text-right text-sm font-bold text-slate-700">
-                        est.&nbsp;{fmt(opt.estimatedTotal)}
-                      </span>
-                      <span className="shrink-0 rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-200 transition-colors">
-                        Book ↗
-                      </span>
-                    </a>
-                  );
-                })}
-              </div>
+          {/* Right: booking options */}
+          <div className="flex flex-col px-5 py-5 md:flex-1 border-t border-slate-100 md:border-t-0 overflow-y-auto">
+
+            {/* Primary CTA — Booking.com */}
+            {options.filter((o) => o.isBookingCom).map((opt) => (
+              <a
+                key={opt.label}
+                href={opt.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mb-4 flex items-center justify-between rounded-xl bg-slate-900 px-5 py-4 text-white hover:bg-slate-800 transition-colors"
+              >
+                <div>
+                  <p className="text-xs text-slate-400 mb-0.5">
+                    {isReal ? "Live price · Direct property link" : "Estimated price"}
+                  </p>
+                  <p className="text-base font-bold">{fmt(total)}</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-semibold">{opt.label}</span>
+                  <span className="rounded-lg bg-white/20 px-3 py-1.5 text-sm font-semibold">Book ↗</span>
+                </div>
+              </a>
+            ))}
+
+            {/* Search on other platforms */}
+            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">
+              Search on other platforms
+            </p>
+            <div className="overflow-hidden rounded-xl border border-slate-200 divide-y divide-slate-100">
+              {options.filter((o) => !o.isBookingCom).map((opt) => (
+                <a
+                  key={opt.label}
+                  href={opt.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-between px-4 py-3 hover:bg-slate-50 transition-colors"
+                >
+                  <span className="text-sm font-semibold text-slate-800">{opt.label}</span>
+                  <span className="rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-200 transition-colors">
+                    Search ↗
+                  </span>
+                </a>
+              ))}
             </div>
+
             <p className="mt-3 text-center text-xs text-slate-400">
-              Estimates for <strong>{hotel.city}</strong> · {checkin}–{checkout} · actual prices may vary
+              {isReal
+                ? "Booking.com shows this exact property. Other platforms search the destination."
+                : "All links search for hotels in " + hotel.city + " with your selected dates."
+              }
             </p>
           </div>
 

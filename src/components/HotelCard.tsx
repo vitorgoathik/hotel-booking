@@ -41,6 +41,16 @@ export function HotelCard({ hotel, nights, onSelect }: HotelCardProps) {
       <div className="hidden sm:flex w-2 shrink-0 bg-amber-500 rounded-l-xl" />
 
       <div className="flex flex-1 flex-col sm:flex-row gap-4 p-4">
+        {/* Real photo (when available from API) */}
+        {hotel.photoUrl && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={hotel.photoUrl}
+            alt={hotel.name}
+            className="hidden sm:block w-32 h-28 rounded-lg object-cover shrink-0"
+          />
+        )}
+
         {/* Info */}
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-2 flex-wrap">
@@ -64,10 +74,12 @@ export function HotelCard({ hotel, nights, onSelect }: HotelCardProps) {
             </div>
           </div>
 
-          {/* Distance */}
-          <p className="mt-2 text-xs text-slate-500">
-            📍 {hotel.distanceToCenter} km from city center
-          </p>
+          {/* Distance — only shown when real data provides it */}
+          {hotel.distanceToCenter > 0 && (
+            <p className="mt-2 text-xs text-slate-500">
+              📍 {hotel.distanceToCenter} km from city center
+            </p>
+          )}
 
           {/* Amenities */}
           <div className="mt-2 flex flex-wrap gap-1.5">
