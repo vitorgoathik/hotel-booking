@@ -10,6 +10,17 @@ Before starting work, ask the user to enable bypass permissions so you don't get
 ## ⚠️ Vercel Env Var Discrepancy
 Vercel has both `RAPIDAPI_KEY` (Production only) and `RAPID_API_KEY` (Production + Preview). The codebase uses `RAPIDAPI_KEY`. Confirm which is correct and remove the duplicate from Vercel.
 
+## Architecture: Client-Driven Fetching
+All search calls must go through a Next.js API route (`/api/hotels`) rather than directly in server components. This enables the client to drive the loading overlay and show per-provider progress in real time.
+
+Pattern:
+1. User submits search → client calls `/api/hotels?...`
+2. API route fans out to all providers concurrently via `ProviderRouter`
+3. Client shows the loading overlay while awaiting the response
+4. Results return as JSON; client renders them and dismisses the overlay
+
+Wrap every provider call inside the API route with `unstable_cache` from `next/cache` (TTL: 10 min / `revalidate: 600`). Cache key = all search params stringified. Repeated identical searches within 10 minutes return cached data without burning RapidAPI quota.
+
 ## Tasks
 
 ### 1. Hotel photos
@@ -62,5 +73,14 @@ Every hotel result card must have a labelled booking button per provider. Requir
 - Buttons open in a new tab (`target="_blank" rel="noopener noreferrer"`)
 - Append affiliate params: `NEXT_PUBLIC_BOOKING_AID` for Booking.com, `NEXT_PUBLIC_AGODA_CID` for Agoda
 
-### 9. Sync shared to all apps after any provider changes
+### 9. Price staleness — auto-refresh after 5 minutes
+Hotel prices and availability change regularly. Requirements:
+- Client tracks the timestamp when results were last loaded
+- After 5 minutes on the results page, silently re-call `/api/hotels` with the same params
+- While refreshing, show the loading overlay with "Fetching up-to-date prices…" (same overlay component, reused)
+- When fresh results arrive, update the list in place — no hard refresh, no scroll reset
+- If the refresh fails, show a small toast: "Prices could not be refreshed — last updated at HH:MM"
+- Always show a "Prices as of HH:MM" timestamp below the results header
+
+### 10. Sync shared to all apps after any provider changes
 After editing any file in `packages/shared/src/`, copy the entire `packages/shared/` folder to the same path in: flight-booking, news-feed, rent-a-car, main-website, games, shopping.
