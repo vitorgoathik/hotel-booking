@@ -4,13 +4,35 @@
     "popularDestinations": "Popular Destinations",
     "deals": "Deals"
   },
+  "hero": {
+    "title": "Find Your Perfect Hotel",
+    "titleAccent": "At the Best Price",
+    "subtitle": "Compare 2M+ hotels in 190+ countries. Free cancellation. No hidden fees.",
+    "popularDestinations": "Popular Destinations",
+    "destinationsSubtitle": "Explore top cities worldwide. Hotel prices updated daily.",
+    "whyTitle": "Why BookingMole?"
+  },
+  "stats": {
+    "hotels": "Hotels worldwide",
+    "fees": "Booking fees",
+    "countries": "Countries covered",
+    "support": "24/7 support"
+  },
   "search": {
     "destination": "Destination",
+    "destinationPlaceholder": "City or destination",
+    "searchIn": "Search hotels in {city}",
+    "hotelCount": "{count} hotels",
     "checkin": "Check-in",
     "checkout": "Check-out",
     "guests": "Guests",
     "rooms": "Rooms",
-    "searchButton": "Search Hotels"
+    "searchButton": "Search Hotels",
+    "guestOption": "{count, plural, one {# Guest} other {# Guests}}",
+    "roomOption": "{count, plural, one {# Room} other {# Rooms}}",
+    "errDestination": "Please enter a destination.",
+    "errDates": "Please select check-in and check-out dates.",
+    "errCheckout": "Check-out must be after check-in."
   },
   "results": {
     "hotelsIn": "Hotels in {destination}",

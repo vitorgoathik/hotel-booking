@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { HotelSearchForm } from "@/components/HotelSearchForm";
 import { Price } from "@/components/Price";
 import { AdUnit } from "@/components/AdUnit";
@@ -11,13 +12,6 @@ export const metadata: Metadata = {
   description: SITE_DESCRIPTION,
   alternates: { canonical: SITE_URL },
 };
-
-const stats = [
-  { value: "2M+", label: "Hotels worldwide" },
-  { value: "$0", label: "Booking fees" },
-  { value: "190+", label: "Countries covered" },
-  { value: "24/7", label: "Customer support" },
-];
 
 const features = [
   {
@@ -61,8 +55,10 @@ const DESTINATION_EMOJIS: Record<string, string> = {
   amsterdam: "🌷",
 };
 
-export default function HomePage() {
+export default async function HomePage() {
   const featured = POPULAR_DESTINATIONS.slice(0, 8);
+  const th = await getTranslations("hero");
+  const ts = await getTranslations("stats");
 
   return (
     <>
@@ -77,11 +73,11 @@ export default function HomePage() {
             id="hero-heading"
             className="mb-4 text-4xl font-extrabold tracking-tight text-white sm:text-5xl md:text-6xl"
           >
-            Find Your Perfect Hotel <br />
-            <span className="text-amber-200">At the Best Price</span>
+            {th("title")} <br />
+            <span className="text-amber-200">{th("titleAccent")}</span>
           </h1>
           <p className="mb-10 text-lg text-amber-100 sm:text-xl">
-            Compare 2M+ hotels in 190+ countries. Free cancellation. No hidden fees.
+            {th("subtitle")}
           </p>
           <HotelSearchForm />
         </div>
@@ -91,10 +87,15 @@ export default function HomePage() {
       <section className="border-b border-slate-200 bg-white" aria-label="Platform statistics">
         <div className="mx-auto max-w-5xl px-4 py-8">
           <dl className="grid grid-cols-2 gap-6 sm:grid-cols-4">
-            {stats.map((stat) => (
-              <div key={stat.label} className="text-center">
+            {[
+              { value: "2M+",  key: "hotels"    },
+              { value: "$0",   key: "fees"      },
+              { value: "190+", key: "countries" },
+              { value: "24/7", key: "support"   },
+            ].map((stat) => (
+              <div key={stat.key} className="text-center">
                 <dt className="text-3xl font-extrabold text-amber-600">{stat.value}</dt>
-                <dd className="mt-1 text-sm text-slate-500">{stat.label}</dd>
+                <dd className="mt-1 text-sm text-slate-500">{ts(stat.key as "hotels" | "fees" | "countries" | "support")}</dd>
               </div>
             ))}
           </dl>
@@ -104,10 +105,10 @@ export default function HomePage() {
       {/* Popular destinations */}
       <section className="mx-auto max-w-7xl px-4 py-14" aria-labelledby="destinations-heading">
         <h2 id="destinations-heading" className="mb-2 text-2xl font-bold text-slate-900">
-          Popular Destinations
+          {th("popularDestinations")}
         </h2>
         <p className="mb-8 text-slate-500">
-          Explore top cities worldwide. Hotel prices updated daily.
+          {th("destinationsSubtitle")}
         </p>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {featured.map((dest) => (

@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { ALL_CITIES, POPULAR_DESTINATIONS } from "@/lib/data";
 
 interface FormState {
@@ -27,9 +28,17 @@ const initialState: FormState = {
 function DestinationInput({
   value,
   onChange,
+  label,
+  placeholder,
+  searchInLabel,
+  hotelCountLabel,
 }: {
   value: string;
   onChange: (val: string) => void;
+  label: string;
+  placeholder: string;
+  searchInLabel: (city: string) => string;
+  hotelCountLabel: (count: number) => string;
 }) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState(value);
@@ -49,9 +58,7 @@ function DestinationInput({
   );
   const showCustomOption = trimmed.length > 0 && !exactMatch;
 
-  useEffect(() => {
-    setQuery(value);
-  }, [value]);
+  useEffect(() => { setQuery(value); }, [value]);
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
@@ -69,11 +76,11 @@ function DestinationInput({
   return (
     <div ref={containerRef} className="relative">
       <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-slate-500">
-        Destination
+        {label}
       </label>
       <input
         type="text"
-        placeholder="City or destination"
+        placeholder={placeholder}
         value={query}
         autoComplete="off"
         onChange={(e) => {
@@ -104,7 +111,7 @@ function DestinationInput({
                   <span className="ml-1 text-slate-400">{d.country}</span>
                 </span>
                 <span className="ml-auto text-xs text-slate-400">
-                  {d.hotelCount.toLocaleString()} hotels
+                  {hotelCountLabel(d.hotelCount)}
                 </span>
               </button>
             </li>
@@ -122,10 +129,7 @@ function DestinationInput({
                 }}
               >
                 <span className="text-base">🔍</span>
-                <span className="text-slate-600">
-                  Search hotels in{" "}
-                  <span className="font-medium text-slate-900">{trimmed}</span>
-                </span>
+                <span className="text-slate-600">{searchInLabel(trimmed)}</span>
               </button>
             </li>
           )}
@@ -137,6 +141,7 @@ function DestinationInput({
 
 export function HotelSearchForm({ compact = false }: { compact?: boolean }) {
   const router = useRouter();
+  const t = useTranslations("search");
   const [form, setForm] = useState<FormState>(initialState);
   const [error, setError] = useState<string | null>(null);
 
@@ -148,15 +153,15 @@ export function HotelSearchForm({ compact = false }: { compact?: boolean }) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.destination.trim()) {
-      setError("Please enter a destination.");
+      setError(t("errDestination"));
       return;
     }
     if (!form.checkin || !form.checkout) {
-      setError("Please select check-in and check-out dates.");
+      setError(t("errDates"));
       return;
     }
     if (form.checkin >= form.checkout) {
-      setError("Check-out must be after check-in.");
+      setError(t("errCheckout"));
       return;
     }
     const params = new URLSearchParams({
@@ -186,11 +191,18 @@ export function HotelSearchForm({ compact = false }: { compact?: boolean }) {
         }`}
       >
         <div className={compact ? "" : "md:col-span-2 lg:col-span-1"}>
-          <DestinationInput value={form.destination} onChange={(v) => set("destination", v)} />
+          <DestinationInput
+            value={form.destination}
+            onChange={(v) => set("destination", v)}
+            label={t("destination")}
+            placeholder={t("destinationPlaceholder")}
+            searchInLabel={(city) => t("searchIn", { city })}
+            hotelCountLabel={(count) => t("hotelCount", { count })}
+          />
         </div>
 
         <div>
-          <label className={labelCls} htmlFor="checkin">Check-in</label>
+          <label className={labelCls} htmlFor="checkin">{t("checkin")}</label>
           <input
             id="checkin"
             type="date"
@@ -202,7 +214,7 @@ export function HotelSearchForm({ compact = false }: { compact?: boolean }) {
         </div>
 
         <div>
-          <label className={labelCls} htmlFor="checkout">Check-out</label>
+          <label className={labelCls} htmlFor="checkout">{t("checkout")}</label>
           <input
             id="checkout"
             type="date"
@@ -215,7 +227,7 @@ export function HotelSearchForm({ compact = false }: { compact?: boolean }) {
 
         <div className="grid grid-cols-2 gap-2">
           <div>
-            <label className={labelCls} htmlFor="guests">Guests</label>
+            <label className={labelCls} htmlFor="guests">{t("guests")}</label>
             <select
               id="guests"
               value={form.guests}
@@ -224,13 +236,13 @@ export function HotelSearchForm({ compact = false }: { compact?: boolean }) {
             >
               {[1, 2, 3, 4, 5, 6].map((n) => (
                 <option key={n} value={n}>
-                  {n} {n === 1 ? "Guest" : "Guests"}
+                  {t("guestOption", { count: n })}
                 </option>
               ))}
             </select>
           </div>
           <div>
-            <label className={labelCls} htmlFor="rooms">Rooms</label>
+            <label className={labelCls} htmlFor="rooms">{t("rooms")}</label>
             <select
               id="rooms"
               value={form.rooms}
@@ -239,7 +251,7 @@ export function HotelSearchForm({ compact = false }: { compact?: boolean }) {
             >
               {[1, 2, 3, 4].map((n) => (
                 <option key={n} value={n}>
-                  {n} {n === 1 ? "Room" : "Rooms"}
+                  {t("roomOption", { count: n })}
                 </option>
               ))}
             </select>
@@ -258,7 +270,7 @@ export function HotelSearchForm({ compact = false }: { compact?: boolean }) {
           type="submit"
           className="w-full rounded-xl bg-amber-600 px-6 py-3.5 text-base font-semibold text-white shadow-md hover:bg-amber-700 active:bg-amber-800 transition-colors focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2"
         >
-          Search Hotels
+          {t("searchButton")}
         </button>
       </div>
     </form>

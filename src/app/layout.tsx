@@ -10,6 +10,7 @@ import { SITE_NAME, SITE_DESCRIPTION, SITE_URL, websiteJsonLd } from "@/lib/seo"
 import { getCurrencyForCountry } from "@/lib/currency";
 import { CurrencyProvider } from "@/components/CurrencyProvider";
 import { LanguageSelector } from "@/components/LanguageSelector";
+import { ThaiFloatAd } from "@/components/ThaiFloatAd";
 import { detectCountry } from "@burrowsoft/shared";
 import "./globals.css";
 
@@ -128,6 +129,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
           <CurrencyProvider currency={currency}>
             <main>{children}</main>
           </CurrencyProvider>
+          <ThaiFloatAd />
         </NextIntlClientProvider>
 
         <footer className="mt-16 border-t border-slate-200 bg-white">

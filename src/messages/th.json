@@ -4,13 +4,35 @@
     "popularDestinations": "จุดหมายยอดนิยม",
     "deals": "โปรโมชัน"
   },
+  "hero": {
+    "title": "ค้นหาโรงแรมที่ใช่",
+    "titleAccent": "ในราคาที่ดีที่สุด",
+    "subtitle": "เปรียบเทียบโรงแรมกว่า 2 ล้านแห่งใน 190+ ประเทศ ยกเลิกฟรี ไม่มีค่าธรรมเนียมซ่อนเร้น",
+    "popularDestinations": "จุดหมายยอดนิยม",
+    "destinationsSubtitle": "สำรวจเมืองยอดนิยมทั่วโลก ราคาโรงแรมอัปเดตทุกวัน",
+    "whyTitle": "ทำไมต้อง BookingMole?"
+  },
+  "stats": {
+    "hotels": "โรงแรมทั่วโลก",
+    "fees": "ค่าธรรมเนียมจอง",
+    "countries": "ประเทศที่ครอบคลุม",
+    "support": "บริการ 24/7"
+  },
   "search": {
     "destination": "จุดหมายปลายทาง",
+    "destinationPlaceholder": "เมืองหรือจุดหมาย",
+    "searchIn": "ค้นหาโรงแรมใน {city}",
+    "hotelCount": "{count} โรงแรม",
     "checkin": "เช็คอิน",
     "checkout": "เช็คเอาท์",
     "guests": "ผู้เข้าพัก",
     "rooms": "จำนวนห้อง",
-    "searchButton": "ค้นหาโรงแรม"
+    "searchButton": "ค้นหาโรงแรม",
+    "guestOption": "{count} ท่าน",
+    "roomOption": "{count} ห้อง",
+    "errDestination": "กรุณาระบุจุดหมายปลายทาง",
+    "errDates": "กรุณาเลือกวันเช็คอินและเช็คเอาท์",
+    "errCheckout": "วันเช็คเอาท์ต้องหลังวันเช็คอิน"
   },
   "results": {
     "hotelsIn": "โรงแรมใน {destination}",
