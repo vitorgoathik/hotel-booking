@@ -2,6 +2,9 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   transpilePackages: ["@burrowsoft/ui"],
+  images: {
+    remotePatterns: [{ protocol: "https", hostname: "cf.bstatic.com" }],
+  },
   async headers() {
     return [
       {

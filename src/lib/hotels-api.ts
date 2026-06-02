@@ -32,7 +32,8 @@ export async function searchDestination(query: string): Promise<DestResult | nul
     // Prefer exact city match, then region, then first result
     const city = json.data.find((d: DestResult) => d.search_type === "city") ?? json.data[0];
     return { dest_id: city.dest_id, search_type: city.search_type, label: city.label ?? query };
-  } catch {
+  } catch (err) {
+    console.error("[hotels-api] Exception:", err);
     return null;
   }
 }
@@ -105,7 +106,10 @@ export async function searchRealHotels(
   adults: number,
   rooms: number,
 ): Promise<Hotel[] | null> {
-  if (!process.env.RAPIDAPI_KEY) return null;
+  if (!process.env.RAPIDAPI_KEY) {
+    console.warn("[hotels-api] RAPIDAPI_KEY not set — using generated data");
+    return null;
+  }
 
   const nights = Math.max(
     1,
@@ -113,7 +117,10 @@ export async function searchRealHotels(
   );
 
   const dest = await searchDestination(city);
-  if (!dest) return null;
+  if (!dest) {
+    console.warn(`[hotels-api] No destination found for "${city}"`);
+    return null;
+  }
 
   const params = new URLSearchParams({
     dest_id:       dest.dest_id,
@@ -133,9 +140,15 @@ export async function searchRealHotels(
       headers: headers(),
       next: { revalidate: 900 }, // 15-min cache
     });
-    if (!res.ok) return null;
+    if (!res.ok) {
+      console.error(`[hotels-api] searchHotels ${res.status}: ${await res.text().catch(() => "")}`);
+      return null;
+    }
     const json = await res.json();
-    if (!json.status || !Array.isArray(json.data?.hotels)) return null;
+    if (!json.status || !Array.isArray(json.data?.hotels)) {
+      console.error("[hotels-api] Unexpected response:", JSON.stringify(json).slice(0, 200));
+      return null;
+    }
 
     return (json.data.hotels as Record<string, unknown>[])
       .filter((h) => {
@@ -146,7 +159,8 @@ export async function searchRealHotels(
       .slice(0, 10)
       .map((h) => mapHotel(h, city, country, nights, dest.dest_id))
       .sort((a, b) => a.pricePerNight - b.pricePerNight);
-  } catch {
+  } catch (err) {
+    console.error("[hotels-api] Exception:", err);
     return null;
   }
 }
