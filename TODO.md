@@ -46,5 +46,21 @@ Requires new env var: `AGODA_RAPIDAPI_KEY` (may share the same `RAPIDAPI_KEY` su
 - Register in `packages/shared/src/providers/hotels/index.ts` `createHotelRouter()`
 - On results page, show Booking.com price vs Agoda price side by side per hotel
 
-### 7. Sync shared to all apps after any provider changes
+### 7. Loading overlay — show while APIs are fetching
+The search results page must show a loading overlay while provider calls are in flight. Requirements:
+- Each active provider fetches concurrently; the overlay displays one animated line per provider, e.g. "Loading hotels from Booking.com…" / "Loading hotels from Agoda…"
+- As each provider resolves, its line gets a checkmark and results stream in below
+- If a provider fails, its line shows "Agoda unavailable" in muted text — no hard error
+- Implement as a client component (`<HotelLoadingOverlay providers={string[]} />`)
+- Overlay fades out once all providers have settled
+
+### 8. Provider redirect buttons
+Every hotel result card must have a labelled booking button per provider. Requirements:
+- Button label: "Book on [Provider]" (e.g. "Book on Booking.com", "Book on Agoda")
+- Each provider class must expose a `bookingUrl(hotel: Hotel, checkIn: string, checkOut: string, guests: number): string` method returning the deep-link with dates and guest count pre-filled
+- Show all available provider buttons per hotel; highlight the cheapest
+- Buttons open in a new tab (`target="_blank" rel="noopener noreferrer"`)
+- Append affiliate params: `NEXT_PUBLIC_BOOKING_AID` for Booking.com, `NEXT_PUBLIC_AGODA_CID` for Agoda
+
+### 9. Sync shared to all apps after any provider changes
 After editing any file in `packages/shared/src/`, copy the entire `packages/shared/` folder to the same path in: flight-booking, news-feed, rent-a-car, main-website, games, shopping.
