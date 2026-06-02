@@ -1,16 +1,93 @@
 "use client";
 
-import { useEffect, Suspense } from "react";
+import { useEffect, useReducer, Suspense, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import type { Hotel } from "@/lib/types";
 import { getNights } from "@/lib/data";
 import { getBookingOptions } from "@/lib/affiliate";
 import { useFormatPrice } from "./CurrencyProvider";
 
-interface Props {
-  hotel: Hotel;
-  onClose: () => void;
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+interface ReviewSnippet { text: string; score: number }
+interface ReviewData    { score: number; count: number; snippets: ReviewSnippet[] }
+interface RoomType {
+  name: string; pricePerNight: number; currency: string;
+  maxOccupancy: number; freeCancellation: boolean; breakfast: boolean;
 }
+interface HotelDetails {
+  photos:    string[];
+  reviews:   ReviewData | null;
+  amenities: string[];
+  rooms:     RoomType[];
+}
+
+// ─── Gallery ──────────────────────────────────────────────────────────────────
+
+function Gallery({ photos, fallback }: { photos: string[]; fallback?: string }) {
+  const [idx, setIdx] = useState(0);
+  const all = photos.length > 0 ? photos : (fallback ? [fallback] : []);
+  if (all.length === 0) return null;
+
+  const clampedIdx = Math.min(idx, all.length - 1);
+  const prev = () => setIdx((i) => (i - 1 + all.length) % all.length);
+  const next = () => setIdx((i) => (i + 1) % all.length);
+
+  return (
+    <div className="-mx-6 -mt-5 mb-4">
+      {/* Main image */}
+      <div className="relative h-52 overflow-hidden bg-slate-100">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={all[clampedIdx]}
+          alt={`Hotel photo ${clampedIdx + 1}`}
+          className="h-full w-full object-cover transition-opacity duration-300"
+        />
+        {all.length > 1 && (
+          <>
+            <button
+              onClick={prev}
+              className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-black/40 px-2.5 py-1 text-white text-lg leading-none hover:bg-black/60 transition-colors"
+              aria-label="Previous photo"
+            >
+              ‹
+            </button>
+            <button
+              onClick={next}
+              className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-black/40 px-2.5 py-1 text-white text-lg leading-none hover:bg-black/60 transition-colors"
+              aria-label="Next photo"
+            >
+              ›
+            </button>
+            <span className="absolute bottom-2 right-3 rounded-full bg-black/50 px-2 py-0.5 text-xs text-white">
+              {clampedIdx + 1} / {all.length}
+            </span>
+          </>
+        )}
+      </div>
+
+      {/* Thumbnail strip */}
+      {all.length > 1 && (
+        <div className="flex gap-1.5 overflow-x-auto px-6 pt-2 pb-0.5">
+          {all.map((url, i) => (
+            <button
+              key={i}
+              onClick={() => setIdx(i)}
+              className={`h-11 w-16 shrink-0 overflow-hidden rounded transition-all ${
+                i === clampedIdx ? "ring-2 ring-amber-500 opacity-100" : "opacity-50 hover:opacity-80"
+              }`}
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={url} alt="" className="h-full w-full object-cover" />
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function StarRating({ stars }: { stars: number }) {
   return (
@@ -20,8 +97,34 @@ function StarRating({ stars }: { stars: number }) {
   );
 }
 
-function ModalInner({ hotel, onClose }: Props) {
-  const fmt = useFormatPrice();
+function Skeleton({ className }: { className?: string }) {
+  return <div className={`animate-pulse rounded bg-slate-100 ${className ?? ""}`} />;
+}
+
+const AMENITY_ICONS: Record<string, string> = {
+  "Free WiFi": "📶", WiFi: "📶", Internet: "📶",
+  "Swimming Pool": "🏊", Pool: "🏊",
+  "Fitness Center": "🏋️", Gym: "🏋️",
+  Restaurant: "🍽️",
+  "Spa & Wellness": "💆", Spa: "💆",
+  "Room Service": "🛎️",
+  "Bar / Lounge": "🍸", Bar: "🍸",
+  "Business Center": "💼",
+  "Free Parking": "🅿️", Parking: "🅿️",
+  "Airport Shuttle": "🚌",
+  "Air conditioning": "❄️",
+  Breakfast: "☕",
+  "Non-smoking rooms": "🚭",
+  Elevator: "🛗",
+  Safe: "🔒",
+};
+
+function amenityIcon(name: string) { return AMENITY_ICONS[name] ?? "✓"; }
+
+// ─── Inner modal (needs Suspense for useSearchParams) ─────────────────────────
+
+function ModalInner({ hotel, onClose }: { hotel: Hotel; onClose: () => void }) {
+  const fmt          = useFormatPrice();
   const searchParams = useSearchParams();
 
   const checkin  = searchParams.get("checkin")  ?? new Date(Date.now() + 86400000).toISOString().split("T")[0] ?? "";
@@ -30,68 +133,101 @@ function ModalInner({ hotel, onClose }: Props) {
   const rooms    = Number(searchParams.get("rooms")  ?? "1");
   const nights   = getNights(checkin, checkout);
 
-  const roomRate = hotel.pricePerNight;
-  const subtotal = roomRate * nights;
-  const taxes    = Math.round(subtotal * 0.14);
-  const total    = subtotal + taxes;
+  // Lazy-load hotel details on modal open
+  const [details,        setDetails]        = useState<HotelDetails | null>(null);
+  const [detailsLoading, setDetailsLoading] = useState(true);
+  // Force-rerender trick so Gallery resets when API photos arrive
+  const [, forceUpdate] = useReducer((x: number) => x + 1, 0);
 
+  useEffect(() => {
+    if (!hotel.bookingComId) { setDetailsLoading(false); return; }
+    const params = new URLSearchParams({
+      hotel_id: String(hotel.bookingComId),
+      checkin,
+      checkout,
+      adults: String(guests),
+      rooms:  String(rooms),
+    });
+    fetch(`/api/hotel-details?${params}`)
+      .then((r) => r.json())
+      .then((d) => { setDetails(d as HotelDetails); forceUpdate(); })
+      .catch(() => {})
+      .finally(() => setDetailsLoading(false));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hotel.bookingComId]);
+
+  // Prefer API photos, fall back to search-result photos
+  const apiPhotos    = details?.photos ?? [];
+  const searchPhotos = hotel.photos ?? (hotel.photoUrl ? [hotel.photoUrl] : []);
+  const galleryPhotos = apiPhotos.length >= searchPhotos.length ? apiPhotos : searchPhotos;
+
+  // Amenities: prefer richer API data
+  const displayAmenities = (details?.amenities?.length ?? 0) > 0
+    ? details!.amenities
+    : hotel.amenities;
+
+  // Cheapest room from API → update displayed price
+  const cheapestRoom  = details?.rooms?.[0];
+  const displayPrice  = cheapestRoom?.pricePerNight ?? hotel.pricePerNight;
+  const subtotal      = displayPrice * nights;
+  const taxes         = Math.round(subtotal * 0.14);
+  const total         = subtotal + taxes;
+
+  const isReal  = !!hotel.bookingComId;
   const options = getBookingOptions(
     hotel.city, checkin, checkout, guests, rooms,
     hotel.bookingComId, hotel.bookingComDestId,
   );
 
-  const isReal = !!hotel.bookingComId;
-
+  // Keyboard / scroll lock
   useEffect(() => {
-    const handler = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
-    document.addEventListener("keydown", handler);
-    return () => document.removeEventListener("keydown", handler);
-  }, [onClose]);
-
-  useEffect(() => {
+    const h = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    document.addEventListener("keydown", h);
     document.body.style.overflow = "hidden";
-    return () => { document.body.style.overflow = ""; };
-  }, []);
+    return () => {
+      document.removeEventListener("keydown", h);
+      document.body.style.overflow = "";
+    };
+  }, [onClose]);
 
   return (
     <div
       className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="modal-title"
+      role="dialog" aria-modal="true" aria-labelledby="modal-title"
     >
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} aria-hidden="true" />
 
       <div className="relative flex w-full max-w-3xl flex-col rounded-t-2xl sm:rounded-2xl bg-white shadow-2xl max-h-[92dvh] sm:max-h-[90vh]">
 
-        {/* Header */}
-        <div className="sticky top-0 z-10 flex shrink-0 items-center justify-between rounded-t-2xl sm:rounded-t-2xl border-b border-slate-100 bg-white px-6 py-4">
+        {/* ── Header ── */}
+        <div className="sticky top-0 z-10 flex shrink-0 items-center justify-between rounded-t-2xl border-b border-slate-100 bg-white px-6 py-4">
           <h2 id="modal-title" className="text-lg font-bold text-slate-900">Hotel Summary</h2>
-          <button onClick={onClose} className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors" aria-label="Close">✕</button>
+          <button
+            onClick={onClose}
+            className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors"
+            aria-label="Close"
+          >✕</button>
         </div>
 
-        {/* Body — two columns on md+ */}
+        {/* ── Body ── */}
         <div className="flex flex-col md:flex-row min-h-0 flex-1 overflow-hidden">
 
-          {/* Left: hotel details */}
-          <div className="overflow-y-auto px-6 py-5 space-y-4 md:w-[45%] md:border-r border-slate-100 shrink-0">
+          {/* ── Left: hotel details ── */}
+          <div className="overflow-y-auto px-6 py-5 space-y-4 md:w-[52%] md:border-r border-slate-100 shrink-0">
 
-            {/* Photo + name */}
-            <div className="flex items-start gap-3">
-              {hotel.photoUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={hotel.photoUrl}
-                  alt={hotel.name}
-                  className="h-14 w-14 shrink-0 rounded-xl object-cover"
-                />
-              ) : (
-                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-2xl">🏨</div>
-              )}
-              <div>
-                <p className="font-semibold text-slate-900 leading-tight">{hotel.name}</p>
+            {/* Gallery (key resets idx when photos change) */}
+            <Gallery
+              key={galleryPhotos.length}
+              photos={galleryPhotos}
+              fallback={hotel.photoUrl}
+            />
+
+            {/* Name + stars */}
+            <div>
+              <p className="font-bold text-slate-900 text-base leading-tight">{hotel.name}</p>
+              <div className="mt-0.5 flex items-center gap-2">
                 <StarRating stars={hotel.stars} />
-                <p className="text-xs text-slate-400 mt-0.5">{hotel.address}, {hotel.city}</p>
+                <span className="text-xs text-slate-400">{hotel.address}, {hotel.city}</span>
               </div>
             </div>
 
@@ -121,7 +257,7 @@ function ModalInner({ hotel, onClose }: Props) {
                 </div>
               )}
               <div className="flex justify-between text-sm text-slate-600">
-                <span>{fmt(roomRate)} × {nights} night{nights !== 1 ? "s" : ""}</span>
+                <span>{fmt(displayPrice)} × {nights} night{nights !== 1 ? "s" : ""}</span>
                 <span>{fmt(subtotal)}</span>
               </div>
               <div className="flex justify-between text-sm text-slate-600">
@@ -135,6 +271,29 @@ function ModalInner({ hotel, onClose }: Props) {
               {isReal && (
                 <p className="text-xs text-emerald-600">✓ Live price from Booking.com</p>
               )}
+              {cheapestRoom && (
+                <p className="text-xs text-slate-400">Based on cheapest available room</p>
+              )}
+            </div>
+
+            {/* Amenities */}
+            <div>
+              <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">Amenities</p>
+              {detailsLoading ? (
+                <div className="flex flex-wrap gap-1.5">
+                  {[1,2,3,4,5].map((i) => <Skeleton key={i} className="h-6 w-20" />)}
+                </div>
+              ) : displayAmenities.length > 0 ? (
+                <div className="flex flex-wrap gap-1.5">
+                  {displayAmenities.slice(0, 12).map((a) => (
+                    <span key={a} className="flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-1 text-xs text-slate-600">
+                      <span>{amenityIcon(a)}</span>{a}
+                    </span>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-xs text-slate-400">No amenity data available</p>
+              )}
             </div>
 
             {/* Badges */}
@@ -147,22 +306,113 @@ function ModalInner({ hotel, onClose }: Props) {
               )}
             </div>
 
-            {/* Amenities (only for generated data) */}
-            {hotel.amenities.length > 0 && (
-              <div className="flex flex-wrap gap-1.5">
-                {hotel.amenities.map((a) => (
-                  <span key={a} className="rounded-full bg-slate-100 px-2.5 py-1 text-xs text-slate-600">✓ {a}</span>
-                ))}
+            {/* Reviews */}
+            {detailsLoading ? (
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-32" />
+                <Skeleton className="h-20 w-full" />
               </div>
-            )}
+            ) : details?.reviews ? (
+              <div className="rounded-xl border border-slate-100 px-4 py-3 space-y-3">
+                <div className="flex items-center gap-3">
+                  <span className="rounded-lg bg-amber-600 px-2.5 py-1 text-sm font-bold text-white">
+                    {details.reviews.score.toFixed(1)}
+                  </span>
+                  <div>
+                    <p className="text-sm font-semibold text-slate-800">Guest Reviews</p>
+                    <p className="text-xs text-slate-400">
+                      {details.reviews.count.toLocaleString()} verified reviews
+                    </p>
+                  </div>
+                  {/* Score bar */}
+                  <div className="ml-auto flex items-center gap-1">
+                    {[...Array(5)].map((_, i) => (
+                      <span
+                        key={i}
+                        className={`text-base ${
+                          i < Math.round(details.reviews!.score / 2) ? "text-amber-400" : "text-slate-200"
+                        }`}
+                      >★</span>
+                    ))}
+                  </div>
+                </div>
+                {details.reviews.snippets.length > 0 && (
+                  <ul className="space-y-2 border-t border-slate-50 pt-2">
+                    {details.reviews.snippets.map((s, i) => (
+                      <li key={i} className="flex items-start gap-2">
+                        <span className="mt-0.5 shrink-0 text-xs text-amber-400">★</span>
+                        <p className="text-xs text-slate-600 leading-relaxed line-clamp-2">
+                          "{s.text}"
+                        </p>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            ) : null}
 
             {hotel.roomsLeft <= 5 && (
-              <p className="text-sm font-medium text-red-500">⚡ Only {hotel.roomsLeft} room{hotel.roomsLeft > 1 ? "s" : ""} left</p>
+              <p className="text-sm font-medium text-red-500">
+                ⚡ Only {hotel.roomsLeft} room{hotel.roomsLeft > 1 ? "s" : ""} left
+              </p>
             )}
           </div>
 
-          {/* Right: booking options */}
-          <div className="flex flex-col px-5 py-5 md:flex-1 border-t border-slate-100 md:border-t-0 overflow-y-auto">
+          {/* ── Right: room types + booking options ── */}
+          <div className="flex flex-col px-5 py-5 md:flex-1 border-t border-slate-100 md:border-t-0 overflow-y-auto gap-4">
+
+            {/* Room types */}
+            {detailsLoading ? (
+              <div>
+                <Skeleton className="mb-3 h-4 w-28" />
+                <div className="space-y-2">
+                  <Skeleton className="h-16 w-full" />
+                  <Skeleton className="h-16 w-full" />
+                </div>
+              </div>
+            ) : (details?.rooms?.length ?? 0) > 0 ? (
+              <div>
+                <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">Available Rooms</p>
+                <div className="space-y-2">
+                  {details!.rooms.slice(0, 5).map((room, i) => (
+                    <div
+                      key={i}
+                      className={`rounded-xl border px-3 py-2.5 transition-colors ${
+                        i === 0 ? "border-amber-200 bg-amber-50" : "border-slate-200 bg-white"
+                      }`}
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="min-w-0">
+                          <p className="text-sm font-semibold text-slate-800 leading-tight truncate">
+                            {room.name}
+                          </p>
+                          <div className="mt-0.5 flex flex-wrap gap-x-2 gap-y-0.5">
+                            <span className="text-xs text-slate-500">👤 up to {room.maxOccupancy}</span>
+                            {room.freeCancellation && (
+                              <span className="text-xs text-emerald-600">✓ Free cancel</span>
+                            )}
+                            {room.breakfast && (
+                              <span className="text-xs text-sky-600">☕ Breakfast</span>
+                            )}
+                          </div>
+                        </div>
+                        <div className="shrink-0 text-right">
+                          <p className="text-base font-bold text-amber-600">
+                            {fmt(room.pricePerNight)}
+                          </p>
+                          <p className="text-xs text-slate-400">/ night</p>
+                        </div>
+                      </div>
+                      {i === 0 && (
+                        <span className="mt-1.5 inline-block rounded-full bg-amber-500 px-2 py-0.5 text-xs font-semibold text-white">
+                          Best price
+                        </span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : null}
 
             {/* Primary CTA — Booking.com */}
             {options.filter((o) => o.isBookingCom).map((opt) => (
@@ -171,7 +421,7 @@ function ModalInner({ hotel, onClose }: Props) {
                 href={opt.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="mb-4 flex items-center justify-between rounded-xl bg-slate-900 px-5 py-4 text-white hover:bg-slate-800 transition-colors"
+                className="flex items-center justify-between rounded-xl bg-slate-900 px-5 py-4 text-white hover:bg-slate-800 transition-colors"
               >
                 <div>
                   <p className="text-xs text-slate-400 mb-0.5">
@@ -186,42 +436,44 @@ function ModalInner({ hotel, onClose }: Props) {
               </a>
             ))}
 
-            {/* Search on other platforms */}
-            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">
-              Search on other platforms
-            </p>
-            <div className="overflow-hidden rounded-xl border border-slate-200 divide-y divide-slate-100">
-              {options.filter((o) => !o.isBookingCom).map((opt) => (
-                <a
-                  key={opt.label}
-                  href={opt.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-between px-4 py-3 hover:bg-slate-50 transition-colors"
-                >
-                  <span className="text-sm font-semibold text-slate-800">{opt.label}</span>
-                  <span className="rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-200 transition-colors">
-                    Search ↗
-                  </span>
-                </a>
-              ))}
+            {/* Other platforms */}
+            <div>
+              <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">
+                Search on other platforms
+              </p>
+              <div className="overflow-hidden rounded-xl border border-slate-200 divide-y divide-slate-100">
+                {options.filter((o) => !o.isBookingCom).map((opt) => (
+                  <a
+                    key={opt.label}
+                    href={opt.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-between px-4 py-3 hover:bg-slate-50 transition-colors"
+                  >
+                    <span className="text-sm font-semibold text-slate-800">{opt.label}</span>
+                    <span className="rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-200 transition-colors">
+                      Search ↗
+                    </span>
+                  </a>
+                ))}
+              </div>
             </div>
 
-            <p className="mt-3 text-center text-xs text-slate-400">
+            <p className="text-center text-xs text-slate-400">
               {isReal
                 ? "Booking.com shows this exact property. Other platforms search the destination."
-                : "All links search for hotels in " + hotel.city + " with your selected dates."
-              }
+                : `All links search for hotels in ${hotel.city} with your selected dates.`}
             </p>
           </div>
-
         </div>
       </div>
     </div>
   );
 }
 
-export function BookingModal(props: Props) {
+// ─── Public export ────────────────────────────────────────────────────────────
+
+export function BookingModal(props: { hotel: Hotel; onClose: () => void }) {
   return (
     <Suspense fallback={null}>
       <ModalInner {...props} />
