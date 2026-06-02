@@ -1,135 +1,34 @@
-# BookingMole — TODO4: Thailand/SEA Region-Specific APIs
+# BookingMole — TODO4: Complete Thai/Portuguese Localisation
 
-## Permissions
-Ask the user to enable bypass permissions before starting: `claude --dangerously-skip-permissions`.
+Finish translation coverage and adopt the shared `LanguageSelector` dropdown component.
 
-## Please fill in Reports4.md when done.
+## Replace LanguageSelector with shared component
+Delete `src/components/LanguageSelector.tsx`. In `layout.tsx`:
+```tsx
+import { LanguageSelector } from "@burrowsoft/shared";
+<LanguageSelector locales={["en", "th"]} />
+```
 
-## Overview
-Agoda is the dominant hotel booking platform in Thailand — it was founded in Bangkok and has the deepest local inventory and cheapest prices. Trip.com is critical for reaching the Chinese tourist segment visiting Thailand. Both should be added as primary providers for TH/SEA users.
+## Wire SearchForm strings (if pending)
+Add `useTranslations("search")` and replace hardcoded strings:
+- `"Destination"`, `"Check-in"`, `"Check-out"`, `"Guests"`, `"Rooms"`, `"Search Hotels"`
+
+## Translate page-level hero
+- `page.tsx` hero title/subtitle (if still hardcoded)
+- Any destination-specific detail pages
+
+## Verify modal labels
+Check `BookingModal.tsx` — all amenity, review, room type labels should use `t()` calls.
+
+## Test end-to-end
+1. Load page in EN
+2. Switch locale dropdown to TH — verify Thai render + Sarabun font
+3. Switch back to EN
+4. Reload — verify cookie persists
+
+## Fill in ThaiReports.md
+Document translation coverage. Link to `API Stories/Thai.md` for later API work (Agoda, Trip.com, etc.).
 
 ---
 
-## What the user needs to arrange first
-
-| Platform | Registration | Notes |
-|---|---|---|
-| **Agoda Partner Hub** | https://partnerhub.agoda.com | Apply for Affiliate API access. Provides Affiliate Lite API v2. Commission 10–20%. |
-| **Trip.com Developers** | https://developers.trip.com/ | Register as developer. Hotel search + booking API. Important for Chinese market in Thailand. |
-
-New env vars to add to Vercel (hotel-booking project):
-- `AGODA_API_KEY` + `AGODA_SITE_ID` (from Partner Hub)
-- `TRIP_COM_API_KEY` (from developers.trip.com)
-- `NEXT_PUBLIC_AGODA_CID` — affiliate CID for booking redirect links (user already registering for this separately)
-- `NEXT_PUBLIC_TRIP_COM_AID` — affiliate ID for Trip.com redirect links
-
----
-
-## Architecture
-Add `AgodaHotelProvider` and `TripComHotelProvider` to shared lib, gated on country.
-
-Country priority in `createHotelRouter(country)`:
-```ts
-// TH, MY, SG, ID, PH, VN, KH, LA, MM: Agoda first (best SEA inventory)
-// CN, HK, TW: Trip.com first
-// All: Booking.com as fallback
-```
-
----
-
-## Tasks
-
-### 1. AgodaHotelProvider
-File: `packages/shared/src/providers/hotels/agoda.ts`
-
-Agoda Affiliate Lite API v2:
-- Docs: https://partners.agoda.com/Content/Documents/AffiliateLiteApi/Affiliate_Lite_API_V2.0.pdf
-- Base URL: `https://affiliateapi7643.agoda.com/affiliateservice/lt2/`
-- Auth: `Authorization: token {AGODA_API_KEY}` header + `site_id` param
-- Hotel search endpoint: `POST /api/v3/property/availability` with check-in/out dates, location, guests
-- Response: property name, address, star rating, price per night, photos, reviews score
-- Normalize to `Hotel` DTO
-- Booking redirect URL: `https://www.agoda.com/hotel/{hotel_id}?cid={AGODA_CID}&checkIn={date}&checkOut={date}&adults={n}`
-
-Register in `createHotelRouter()` gated on `process.env.AGODA_API_KEY`.
-
-### 2. TripComHotelProvider
-File: `packages/shared/src/providers/hotels/tripcom.ts`
-
-Trip.com Hotel API:
-- Base URL: `https://openapi.trip.com/` (verify exact path in Trip.com developer docs)
-- Auth: API key in header
-- Search: hotel list by city + dates
-- Response: hotel name, images, price, star rating, reviews
-- Normalize to `Hotel` DTO
-- Booking redirect: `https://www.trip.com/hotels/{city}/?checkIn={date}&checkOut={date}&adult={n}&aid={TRIP_COM_AID}`
-
-Register in `createHotelRouter()` gated on `process.env.TRIP_COM_API_KEY`.
-
-### 3. Update createHotelRouter to accept country
-File: `packages/shared/src/providers/hotels/index.ts`
-- Accept optional `country` param
-- SEA countries → Agoda first, then Booking.com
-- CN/HK/TW → Trip.com first, then Booking.com
-- Update `hotel-booking/src/app/api/hotels/route.ts` to pass country from `detectCountry(headers)`
-
-### 4. Side-by-side price comparison
-The `BookingModal` already supports multiple providers — ensure:
-- When Agoda returns results, show "Book on Agoda ↗" alongside "Book on Booking.com ↗"
-- Price comparison clearly labels which is cheaper
-- Agoda CID affiliate param appended to all Agoda booking URLs
-
-### 5. Popular Thai hotel destinations
-When locale is `th`, show Thai city suggestions in the destination autocomplete:
-- Bangkok, Phuket, Chiang Mai, Koh Samui, Pattaya, Krabi, Hua Hin, Koh Phangan, Pai, Chiang Rai
-
-### 6. Sync packages/shared to all apps after changes
-After editing any shared hotel provider file, copy `packages/shared/` to: flight-booking, news-feed, rent-a-car, main-website, games, shopping.
-
----
-
-## Brazil Region (country === "BR")
-
-### What the user needs to arrange
-
-| Platform | Registration | Notes |
-|---|---|---|
-| **Booking.com Affiliate (Awin)** | https://ui.awin.com/merchant-profile/18120 | 4% base commission. Already wired via `NEXT_PUBLIC_BOOKING_AID` — just ensure the AID is set on Vercel. |
-| **Expedia Affiliate (pt-BR)** | https://affiliates.expediagroup.com/pt-br/home | Variable commission. Brazilian affiliate portal. Add `NEXT_PUBLIC_EXPEDIA_AID` to Vercel. |
-| **Decolar.com** | Contact Decolar partner team | No public API. Deep-link affiliate only. Largest OTA in Brazil — critical CTA. |
-
-New env vars for Vercel (hotel-booking project):
-- `NEXT_PUBLIC_EXPEDIA_AID` (from Expedia affiliate)
-- `NEXT_PUBLIC_DECOLAR_AID` (if/when affiliate agreement is reached)
-
-### No new data provider needed for Brazil
-Booking.com (already wired) has strong Brazil inventory. Agoda does NOT have meaningful Brazil coverage — it's SEA-focused. For Brazil, the priority is:
-1. Booking.com (primary — already works)
-2. Expedia (secondary — affiliate redirect)
-3. Decolar.com (Brazilian users' preferred OTA — affiliate redirect)
-
-### ExpediaHotelAffiliate redirect
-Add Expedia to the booking CTA buttons in `HotelCard` and `BookingModal` when `country === "BR"`:
-```ts
-const expediaUrl = `https://www.expedia.com.br/Hotels/search?destination=${encodeURIComponent(hotel.city)}&checkIn=${checkIn}&checkOut=${checkOut}&adults=${guests}&affcid=${process.env.NEXT_PUBLIC_EXPEDIA_AID}`;
-```
-
-### Decolar.com affiliate redirect
-Add Decolar CTA when `country === "BR"`:
-```ts
-const decolarUrl = `https://www.decolar.com/shop/hotels/list/${encodeURIComponent(city)}/${checkIn}/${checkOut}/${guests}/1`;
-// Append affiliate params once agreement is in place
-```
-
-### Popular Brazilian hotel destinations
-When locale is `pt-BR`, show city suggestions:
-- Rio de Janeiro, São Paulo, Salvador, Fortaleza, Recife, Florianópolis, Natal, Manaus, Foz do Iguaçu, Belo Horizonte, Brasília, Gramado, Porto de Galinhas, Maceió, Curitiba
-
-### Update createHotelRouter country logic
-```ts
-// BR: Booking.com first (best Brazil inventory), skip Agoda
-if (country === "BR") {
-  if (process.env.RAPIDAPI_KEY) providers.push(new BookingComHotelProvider(...));
-  // Agoda not added for Brazil
-}
-```
+**API work:** See `API Stories/Thai.md` and `API Stories/Brazil.md` (start after localisation is complete).
