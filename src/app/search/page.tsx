@@ -3,6 +3,7 @@ import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { HotelSearchForm } from "@/components/HotelSearchForm";
 import { SearchPageClient } from "@/components/SearchPageClient";
+import { HotelAffiliateLinks } from "@/components/HotelAffiliateLinks";
 import { getNights, ALL_CITIES } from "@/lib/data";
 import { buildSearchMetadata } from "@/lib/seo";
 
@@ -75,6 +76,15 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
         guests={guests}
         rooms={rooms}
         nights={nights}
+      />
+
+      <HotelAffiliateLinks
+        destination={destination}
+        checkin={checkin}
+        checkout={checkout}
+        guests={guests}
+        rooms={rooms}
+        country={country}
       />
     </div>
   );
