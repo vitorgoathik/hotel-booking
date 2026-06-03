@@ -1,37 +1,9 @@
 import { getRequestConfig } from "next-intl/server";
-import { cookies, headers } from "next/headers";
+import { routing } from "./routing";
 
-const SUPPORTED = [
-  "en", "th", "es", "ru", "pt-BR", "fr", "ja", "zh", "zh-TW", "ar", "de", "id", "ko", "it", "vi",
-] as const;
-type Locale = (typeof SUPPORTED)[number];
+type Locale = (typeof routing.locales)[number];
 
-const COUNTRY_LOCALE: Record<string, Locale> = {
-  TH: "th",
-  ES: "es", MX: "es", AR: "es", CO: "es", CL: "es", PE: "es", VE: "es", EC: "es",
-  UY: "es", BO: "es", PY: "es", DO: "es", GT: "es", HN: "es", SV: "es", NI: "es",
-  CR: "es", PA: "es", CU: "es",
-  BR: "pt-BR", PT: "pt-BR",
-  FR: "fr", BE: "fr", CH: "fr", CA: "fr", LU: "fr",
-  JP: "ja",
-  CN: "zh",
-  TW: "zh-TW", HK: "zh-TW", MO: "zh-TW",
-  SA: "ar", AE: "ar", EG: "ar", KW: "ar", QA: "ar", BH: "ar", OM: "ar",
-  JO: "ar", LB: "ar", MA: "ar", DZ: "ar", TN: "ar", IQ: "ar", YE: "ar",
-  DE: "de", AT: "de",
-  ID: "id",
-  KR: "ko",
-  IT: "it",
-  VN: "vi",
-  RU: "ru", UA: "ru", KZ: "ru", BY: "ru", UZ: "ru",
-};
-
-function isSupported(l: string): l is Locale {
-  return (SUPPORTED as readonly string[]).includes(l);
-}
-
-// Static imports — one per locale. Avoids template-literal dynamic import
-// which webpack bundles into a single chunk that breaks on the pt-BR hyphen.
+// Static imports per locale — avoids template-literal dynamic import issues with pt-BR
 async function loadMessages(locale: Locale): Promise<Record<string, unknown>> {
   switch (locale) {
     case "th":    return (await import("../messages/th.json")).default;
@@ -52,18 +24,13 @@ async function loadMessages(locale: Locale): Promise<Record<string, unknown>> {
   }
 }
 
-export default getRequestConfig(async () => {
-  const cookieStore = await cookies();
-  const hdrs        = await headers();
-
-  const fromCookie = cookieStore.get("NEXT_LOCALE")?.value ?? "";
-  const country    = hdrs.get("x-vercel-ip-country") ?? hdrs.get("cf-ipcountry") ?? "";
-  const fromCountry: Locale = COUNTRY_LOCALE[country] ?? "en";
-
-  const locale: Locale = isSupported(fromCookie) ? fromCookie : fromCountry;
-
+export default getRequestConfig(async ({ requestLocale }) => {
+  let locale = await requestLocale;
+  if (!locale || !routing.locales.includes(locale as Locale)) {
+    locale = routing.defaultLocale;
+  }
   return {
     locale,
-    messages: await loadMessages(locale),
+    messages: await loadMessages(locale as Locale),
   };
 });

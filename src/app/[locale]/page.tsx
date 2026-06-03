@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { getTranslations } from "next-intl/server";
+import { Link } from "@/i18n/navigation";
 import { HotelSearchForm } from "@/components/HotelSearchForm";
 import { Price } from "@/components/Price";
 import { AdUnit } from "@/components/AdUnit";
@@ -141,7 +141,6 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Ad — between destinations and features */}
       <div className="mx-auto max-w-5xl px-4 py-2">
         <AdUnit slot="HOME_BANNER_SLOT" format="horizontal" />
       </div>
@@ -167,7 +166,6 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* SEO content */}
       <section className="mx-auto max-w-4xl px-4 py-14" aria-labelledby="seo-content-heading">
         <h2 id="seo-content-heading" className="mb-4 text-xl font-bold text-slate-900">
           How to Find the Best Hotel Deals
@@ -176,22 +174,19 @@ export default async function HomePage() {
           <p>
             Finding the best hotel prices doesn&apos;t have to be difficult. {SITE_NAME} searches
             across hundreds of booking platforms simultaneously, so you see all available options
-            in one place. Whether you&apos;re looking for a budget stay or a luxury resort,
-            our comparison engine surfaces the best prices for your destination.
+            in one place.
           </p>
           <p>
             Booking in advance typically saves money — most hotels offer the lowest rates 30–60 days
-            before check-in. Last-minute deals are also available, especially for city hotels. For popular
-            destinations like{" "}
+            before check-in. For popular destinations like{" "}
             <Link href="/hotels/paris" className="text-amber-600 hover:underline">Paris</Link>,{" "}
             <Link href="/hotels/new-york" className="text-amber-600 hover:underline">New York</Link>, or{" "}
             <Link href="/hotels/tokyo" className="text-amber-600 hover:underline">Tokyo</Link>,
-            we recommend booking at least 3–4 weeks in advance to lock in the best rates.
+            we recommend booking at least 3–4 weeks in advance.
           </p>
           <p>
             Always look for hotels with free cancellation policies — they give you flexibility to cancel
-            if your plans change, often without any penalty up to 24 or 48 hours before arrival.
-            {SITE_NAME} highlights free cancellation options prominently in search results.
+            if your plans change. {SITE_NAME} highlights free cancellation options prominently in search results.
           </p>
         </div>
       </section>
