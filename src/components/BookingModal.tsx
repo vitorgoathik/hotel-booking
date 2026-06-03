@@ -6,7 +6,6 @@ import { useTranslations } from "next-intl";
 import type { Hotel } from "@/lib/types";
 import { getNights } from "@/lib/data";
 import { buildHotelAffiliateLinks } from "@burrowsoft/shared";
-import { getBookingOptions } from "@/lib/affiliate";
 import { useFormatPrice } from "./CurrencyProvider";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -177,11 +176,6 @@ function ModalInner({ hotel, onClose }: { hotel: Hotel; onClose: () => void }) {
   const total         = subtotal + taxes;
 
   const isReal  = !!hotel.bookingComId;
-  const options = getBookingOptions(
-    hotel.city, checkin, checkout, guests, rooms,
-    hotel.bookingComId, hotel.bookingComDestId,
-  );
-
   const affiliateLinks = buildHotelAffiliateLinks({
     destination: hotel.city,
     checkin,
@@ -426,27 +420,6 @@ function ModalInner({ hotel, onClose }: { hotel: Hotel; onClose: () => void }) {
               </div>
             ) : null}
 
-            {/* Primary CTA — Booking.com */}
-            {options.filter((o) => o.isBookingCom).map((opt) => (
-              <a
-                key={opt.label}
-                href={opt.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center justify-between rounded-xl bg-slate-900 px-5 py-4 text-white hover:bg-slate-800 transition-colors"
-              >
-                <div>
-                  <p className="text-xs text-slate-400 mb-0.5">
-                    {isReal ? t("livePrice") : t("estimatedPrice")}
-                  </p>
-                  <p className="text-base font-bold">{fmt(total)}</p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-semibold">{opt.label}</span>
-                  <span className="rounded-lg bg-white/20 px-3 py-1.5 text-sm font-semibold">{t("book")}</span>
-                </div>
-              </a>
-            ))}
 
             {/* Other platforms */}
             {affiliateLinks.length > 0 && (
