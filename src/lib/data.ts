@@ -292,8 +292,9 @@ export function generateHotels(city: string, checkin: string): Hotel[] {
     const streetName = STREET_NAMES[Math.floor(rand(15) * STREET_NAMES.length)] ?? "Main Street";
     const address = `${streetNum} ${streetName}`;
 
+    const citySlug = (dest?.city ?? city).toLowerCase().replace(/\s+/g, "-");
     hotels.push({
-      id: `${(dest?.city ?? city).toLowerCase().replace(/\s+/g, "-")}-${i + 1}`,
+      id: `${citySlug}-${i + 1}`,
       name,
       stars,
       rating,
@@ -308,6 +309,8 @@ export function generateHotels(city: string, checkin: string): Hotel[] {
       freeCancellation,
       breakfastIncluded,
       roomsLeft,
+      // Consistent seeded placeholder so cards always show a photo
+      photoUrl: `https://picsum.photos/seed/${citySlug}-${i + 1}/640/400`,
     });
   }
 

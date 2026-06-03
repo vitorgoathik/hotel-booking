@@ -68,14 +68,43 @@ export function SearchPageClient({
         setHotels(fetched);
         setIsReal(true);
         setToastMsg(null);
+        // Persist real results so photos survive rate-limit periods within the session
+        try {
+          sessionStorage.setItem(
+            `hotels:${destination}:${checkin}:${checkout}`,
+            JSON.stringify(fetched),
+          );
+        } catch { /* storage full or unavailable — ignore */ }
       } else {
-        setHotels(generateHotels(destination, checkin));
-        setIsReal(false);
+        // Try session cache before falling back to photo-less mock data
+        const cached = (() => {
+          try {
+            const raw = sessionStorage.getItem(`hotels:${destination}:${checkin}:${checkout}`);
+            return raw ? (JSON.parse(raw) as Hotel[]) : null;
+          } catch { return null; }
+        })();
+        if (cached && cached.length > 0) {
+          setHotels(cached);
+          setIsReal(true);
+        } else {
+          setHotels(generateHotels(destination, checkin));
+          setIsReal(false);
+        }
       }
     } catch {
       setFailed(PROVIDERS);
       setAllSettled(true);
-      if (isRefresh && loadedAt) {
+      // Try session cache before falling back to mock data
+      const cached = (() => {
+        try {
+          const raw = sessionStorage.getItem(`hotels:${destination}:${checkin}:${checkout}`);
+          return raw ? (JSON.parse(raw) as Hotel[]) : null;
+        } catch { return null; }
+      })();
+      if (cached && cached.length > 0) {
+        setHotels(cached);
+        setIsReal(true);
+      } else if (isRefresh && loadedAt) {
         const hhmm = loadedAt.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
         setToastMsg(`${tl("unavailable", { provider: "Booking.com" })} — last updated at ${hhmm}`);
       } else {
