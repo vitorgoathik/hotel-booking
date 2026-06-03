@@ -4,6 +4,9 @@ import createNextIntlPlugin from "next-intl/plugin";
 const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
 
 const nextConfig: NextConfig = {
+  experimental: {
+    cpus: 1, // Limit concurrent SSG workers — prevents OOM on Windows dev builds
+  },
   transpilePackages: ["@burrowsoft/ui"],
   images: {
     remotePatterns: [{ protocol: "https", hostname: "cf.bstatic.com" }],

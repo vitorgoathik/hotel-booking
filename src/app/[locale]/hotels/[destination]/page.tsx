@@ -20,7 +20,16 @@ interface Props {
   params: Promise<{ locale: string; destination: string }>;
 }
 
-export async function generateStaticParams() {
+export const dynamicParams = true;
+
+export function generateStaticParams({
+  params,
+}: {
+  params: { locale: string };
+}) {
+  // Only pre-render English destinations at build time to avoid OOM on large SSG.
+  // Other locales are generated on-demand (ISR via revalidate).
+  if (params.locale !== "en") return [];
   return getAllDestinationSlugs().map((slug) => ({ destination: slug }));
 }
 
