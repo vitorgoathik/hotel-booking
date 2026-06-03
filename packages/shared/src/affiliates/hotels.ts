@@ -96,10 +96,11 @@ const AFFILIATES: Array<HotelAffiliateLink & {
     // Only show for Asian destinations — Trip.com has thin inventory for EU/US cities
     showFor: ({ destination }) => isAsianDestination(destination),
     buildUrl: ({ destination, checkin, checkout, guests, rooms }) => {
-      // Trip.com uses numeric city IDs internally; "city=Name" is ignored.
-      // "keyword" triggers a text search that correctly matches the destination.
+      // Trip.com's /hotels/list endpoint ignores text city names and requires
+      // internal numeric city IDs. Their SEO hotel pages accept city name slugs
+      // and honour date/guest query params — use those instead.
+      const slug = destination.toLowerCase().replace(/\s+/g, "-");
       const params = new URLSearchParams({
-        keyword: destination,
         checkIn: checkin,
         checkOut: checkout,
         adult: String(guests),
@@ -109,7 +110,7 @@ const AFFILIATES: Array<HotelAffiliateLink & {
         trip_sub1: "",
         trip_sub3: "D17566096",
       });
-      return `https://www.trip.com/hotels/list?${params}`;
+      return `https://www.trip.com/hotels/${slug}-hotels/?${params}`;
     },
   },
 
