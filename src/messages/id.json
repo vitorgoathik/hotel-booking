@@ -41,7 +41,8 @@
     "viewMap": "Lihat di peta ↗",
     "roomsLeft": "⚡ Sisa {count} kamar",
     "freeCancellation": "✓ Pembatalan gratis",
-    "breakfastIncluded": "☕ Sarapan termasuk"
+    "breakfastIncluded": "☕ Sarapan termasuk",
+    "details": "Detail"
   },
   "loading": {
     "finding": "Mencari hotel terbaik…",

@@ -41,7 +41,8 @@
     "viewMap": "在地圖上查看 ↗",
     "roomsLeft": "⚡ 僅剩 {count} 間",
     "freeCancellation": "✓ 免費取消",
-    "breakfastIncluded": "☕ 含早餐"
+    "breakfastIncluded": "☕ 含早餐",
+    "details": "查看詳情"
   },
   "loading": {
     "finding": "正在搜尋最優惠飯店…",

@@ -41,7 +41,8 @@
     "viewMap": "地図で見る ↗",
     "roomsLeft": "⚡ 残り{count}室",
     "freeCancellation": "✓ 無料キャンセル",
-    "breakfastIncluded": "☕ 朝食付き"
+    "breakfastIncluded": "☕ 朝食付き",
+    "details": "詳細"
   },
   "loading": {
     "finding": "最適なホテルを検索中…",

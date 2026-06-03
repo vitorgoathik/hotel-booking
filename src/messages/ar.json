@@ -41,7 +41,8 @@
     "viewMap": "عرض على الخريطة ↗",
     "roomsLeft": "⚡ تبقّت {count} غرفة فقط",
     "freeCancellation": "✓ إلغاء مجاني",
-    "breakfastIncluded": "☕ الإفطار مشمول"
+    "breakfastIncluded": "☕ الإفطار مشمول",
+    "details": "التفاصيل"
   },
   "loading": {
     "finding": "جارٍ البحث عن أفضل الفنادق…",

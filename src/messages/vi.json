@@ -41,7 +41,8 @@
     "viewMap": "Xem trên bản đồ ↗",
     "roomsLeft": "⚡ Còn {count} phòng",
     "freeCancellation": "✓ Hủy phòng miễn phí",
-    "breakfastIncluded": "☕ Bao gồm bữa sáng"
+    "breakfastIncluded": "☕ Bao gồm bữa sáng",
+    "details": "Chi tiết"
   },
   "loading": {
     "finding": "Đang tìm khách sạn tốt nhất…",

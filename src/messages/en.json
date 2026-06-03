@@ -50,7 +50,8 @@
     "viewMap": "View on map ↗",
     "roomsLeft": "{count, plural, one {⚡ # room left} other {⚡ # rooms left}}",
     "freeCancellation": "✓ Free cancellation",
-    "breakfastIncluded": "☕ Breakfast included"
+    "breakfastIncluded": "☕ Breakfast included",
+    "details": "Details"
   },
   "loading": {
     "finding": "Finding the best hotels…",

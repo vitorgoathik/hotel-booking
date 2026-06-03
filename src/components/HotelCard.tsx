@@ -38,27 +38,6 @@ const AMENITY_ICONS: Record<string, string> = {
   "Airport Shuttle": "🚌",
 };
 
-function bookingComDeepLink(
-  hotel: Hotel,
-  checkin: string,
-  checkout: string,
-  guests: number,
-  rooms: number,
-): string {
-  const aid = process.env.NEXT_PUBLIC_BOOKING_AID;
-  const params = new URLSearchParams({
-    ss:           hotel.city,
-    checkin,
-    checkout,
-    group_adults: String(guests),
-    no_rooms:     String(rooms),
-    lang:         "en-us",
-    ...(hotel.bookingComId    ? { highlighted_hotels: String(hotel.bookingComId) }      : {}),
-    ...(hotel.bookingComDestId ? { dest_id: hotel.bookingComDestId, dest_type: "city" } : {}),
-    ...(aid ? { aid } : {}),
-  });
-  return `https://www.booking.com/searchresults.en.html?${params}`;
-}
 
 function mapUrl(hotel: Hotel): string {
   if (hotel.latitude && hotel.longitude) {
@@ -70,7 +49,6 @@ function mapUrl(hotel: Hotel): string {
 export function HotelCard({ hotel, nights, checkin, checkout, guests, rooms, onSelect }: HotelCardProps) {
   const t           = useTranslations("results");
   const ratingLabel = getRatingLabel(hotel.rating);
-  const bookUrl     = bookingComDeepLink(hotel, checkin, checkout, guests, rooms);
 
   return (
     <article className="flex flex-col sm:flex-row gap-0 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition-all hover:shadow-md">
@@ -182,15 +160,13 @@ export function HotelCard({ hotel, nights, checkin, checkout, guests, rooms, onS
               </p>
             )}
 
-            {/* Primary: direct Booking.com link */}
-            <a
-              href={bookUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="block w-full rounded-xl bg-amber-600 px-4 py-2.5 text-center text-sm font-semibold text-white hover:bg-amber-700 active:bg-amber-800 transition-colors whitespace-nowrap"
+            {/* Primary: open details modal */}
+            <button
+              onClick={() => onSelect(hotel)}
+              className="block w-full rounded-xl bg-amber-600 px-4 py-2.5 text-center text-sm font-semibold text-white hover:bg-amber-700 active:bg-amber-800 transition-colors"
             >
-              {t("bookOn", { provider: "Booking.com" })}
-            </a>
+              {t("details")}
+            </button>
 
             {/* Secondary: Expedia + Trip.com deep links */}
             <div className="flex gap-1.5">

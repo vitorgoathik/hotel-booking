@@ -41,7 +41,8 @@
     "viewMap": "Показать на карте ↗",
     "roomsLeft": "⚡ Осталось {count} номер{count, plural, one {} few {а} other {ов}}",
     "freeCancellation": "✓ Бесплатная отмена",
-    "breakfastIncluded": "☕ Завтрак включён"
+    "breakfastIncluded": "☕ Завтрак включён",
+    "details": "Подробнее"
   },
   "loading": {
     "finding": "Ищем лучшие отели…",

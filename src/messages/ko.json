@@ -41,7 +41,8 @@
     "viewMap": "지도에서 보기 ↗",
     "roomsLeft": "⚡ 객실 {count}개 남음",
     "freeCancellation": "✓ 무료 취소",
-    "breakfastIncluded": "☕ 조식 포함"
+    "breakfastIncluded": "☕ 조식 포함",
+    "details": "상세 정보"
   },
   "loading": {
     "finding": "최적의 호텔을 찾는 중…",

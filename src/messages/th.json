@@ -50,7 +50,8 @@
     "viewMap": "ดูบนแผนที่ ↗",
     "roomsLeft": "⚡ เหลือ {count} ห้องเท่านั้น",
     "freeCancellation": "✓ ยกเลิกได้ฟรี",
-    "breakfastIncluded": "☕ รวมอาหารเช้า"
+    "breakfastIncluded": "☕ รวมอาหารเช้า",
+    "details": "รายละเอียด"
   },
   "loading": {
     "finding": "กำลังค้นหาโรงแรมที่ดีที่สุด…",

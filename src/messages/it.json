@@ -41,7 +41,8 @@
     "viewMap": "Vedi sulla mappa ↗",
     "roomsLeft": "{count, plural, one {⚡ # camera rimasta} other {⚡ # camere rimaste}}",
     "freeCancellation": "✓ Cancellazione gratuita",
-    "breakfastIncluded": "☕ Colazione inclusa"
+    "breakfastIncluded": "☕ Colazione inclusa",
+    "details": "Dettagli"
   },
   "loading": {
     "finding": "Ricerca dei migliori hotel…",
