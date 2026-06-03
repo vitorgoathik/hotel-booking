@@ -4,9 +4,11 @@ const RAPIDAPI_HOST = "booking-com15.p.rapidapi.com";
 const BASE = `https://${RAPIDAPI_HOST}/api/v1/hotels`;
 
 function headers(): HeadersInit {
+  // Strip UTF-8 BOM (U+FEFF) that can appear when the key is pasted from certain editors
+  const key = (process.env.RAPIDAPI_KEY ?? "").replace(/^﻿/, "");
   return {
     "x-rapidapi-host": RAPIDAPI_HOST,
-    "x-rapidapi-key": process.env.RAPIDAPI_KEY ?? "",
+    "x-rapidapi-key": key,
   };
 }
 

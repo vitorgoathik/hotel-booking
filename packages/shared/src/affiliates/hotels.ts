@@ -97,9 +97,7 @@ const AFFILIATES: Array<HotelAffiliateLink & {
     showFor: ({ destination }) => isAsianDestination(destination),
     buildUrl: ({ destination, checkin, checkout, guests, rooms }) => {
       const params = new URLSearchParams({
-        display: destination,
-        optionType: "City",
-        optionName: destination,
+        city: destination,
         checkIn: checkin,
         checkOut: checkout,
         adult: String(guests),

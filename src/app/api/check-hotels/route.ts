@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 
 export async function GET() {
-  const key = process.env.RAPIDAPI_KEY;
+  // Strip UTF-8 BOM that may be prepended when the key is copy-pasted from certain editors
+  const key = (process.env.RAPIDAPI_KEY ?? "").replace(/^﻿/, "") || undefined;
 
   if (!key) {
     return NextResponse.json({ ok: false, error: "RAPIDAPI_KEY not set" }, { status: 500 });
