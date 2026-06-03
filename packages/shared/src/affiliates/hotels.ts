@@ -96,8 +96,10 @@ const AFFILIATES: Array<HotelAffiliateLink & {
     // Only show for Asian destinations — Trip.com has thin inventory for EU/US cities
     showFor: ({ destination }) => isAsianDestination(destination),
     buildUrl: ({ destination, checkin, checkout, guests, rooms }) => {
+      // Trip.com uses numeric city IDs internally; "city=Name" is ignored.
+      // "keyword" triggers a text search that correctly matches the destination.
       const params = new URLSearchParams({
-        city: destination,
+        keyword: destination,
         checkIn: checkin,
         checkOut: checkout,
         adult: String(guests),

@@ -133,7 +133,7 @@ export function HotelCard({ hotel, nights, checkin, checkout, guests, rooms, onS
         </div>
 
         {/* Price + CTAs */}
-        <div className="sm:w-48 shrink-0 flex flex-row sm:flex-col items-center sm:items-end justify-between sm:justify-center gap-3 sm:gap-2 border-t sm:border-t-0 sm:border-l border-slate-100 pt-3 sm:pt-0 sm:pl-4">
+        <div className="sm:w-52 shrink-0 flex flex-row sm:flex-col items-center sm:items-end justify-between sm:justify-center gap-3 sm:gap-2 border-t sm:border-t-0 sm:border-l border-slate-100 pt-3 sm:pt-0 sm:pl-4">
           <div className="text-left sm:text-right">
             {hotel.originalPrice && (
               <p className="text-xs text-slate-400 line-through">
@@ -146,7 +146,7 @@ export function HotelCard({ hotel, nights, checkin, checkout, guests, rooms, onS
             <p className="text-xs text-slate-400">{t("perNight")}</p>
             {nights > 1 && (
               <p className="text-xs font-medium text-slate-600">
-                <Price usd={hotel.pricePerNight * nights} /> total ({nights} nights)
+                <Price usd={hotel.pricePerNight * nights} /> · {t("nights", { count: nights })}
               </p>
             )}
           </div>
