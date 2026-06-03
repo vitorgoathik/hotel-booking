@@ -57,7 +57,7 @@ export function HotelCard({ hotel, nights, checkin, checkout, guests, rooms, onS
         // eslint-disable-next-line @next/next/no-img-element
         <img
           src={hotel.photoUrl}
-          alt={hotel.name}
+          alt={`${hotel.name} – hotel in ${hotel.city}`}
           className="w-full h-40 object-cover sm:w-32 sm:h-full sm:rounded-l-xl rounded-t-xl shrink-0"
         />
       )}

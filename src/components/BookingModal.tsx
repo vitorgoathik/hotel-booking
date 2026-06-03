@@ -25,7 +25,7 @@ interface HotelDetails {
 
 // ─── Gallery ──────────────────────────────────────────────────────────────────
 
-function Gallery({ photos, fallback }: { photos: string[]; fallback?: string }) {
+function Gallery({ photos, fallback, hotelName, city }: { photos: string[]; fallback?: string; hotelName?: string; city?: string }) {
   const [idx, setIdx] = useState(0);
   const all = photos.length > 0 ? photos : (fallback ? [fallback] : []);
   if (all.length === 0) return null;
@@ -41,7 +41,7 @@ function Gallery({ photos, fallback }: { photos: string[]; fallback?: string }) 
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={all[clampedIdx]}
-          alt={`Hotel photo ${clampedIdx + 1}`}
+          alt={hotelName && city ? `${hotelName} – ${city} hotel photo ${clampedIdx + 1}` : `Hotel photo ${clampedIdx + 1}`}
           className="h-full w-full object-cover transition-opacity duration-300"
         />
         {all.length > 1 && (
@@ -79,7 +79,7 @@ function Gallery({ photos, fallback }: { photos: string[]; fallback?: string }) 
               }`}
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={url} alt="" className="h-full w-full object-cover" />
+              <img src={url} alt={hotelName ? `${hotelName} photo thumbnail` : ""} className="h-full w-full object-cover" />
             </button>
           ))}
         </div>
@@ -226,6 +226,8 @@ function ModalInner({ hotel, onClose }: { hotel: Hotel; onClose: () => void }) {
               key={galleryPhotos.length}
               photos={galleryPhotos}
               fallback={hotel.photoUrl}
+              hotelName={hotel.name}
+              city={hotel.city}
             />
 
             {/* Name + stars */}

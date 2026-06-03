@@ -14,6 +14,7 @@ import {
   hotelDestinationJsonLd,
   getAllDestinationSlugs,
 } from "@/lib/seo";
+import { getCachedHotelEditorial } from "@/lib/editorial";
 
 interface Props {
   params: Promise<{ locale: string; destination: string }>;
@@ -61,6 +62,7 @@ export default async function DestinationPage({ params }: Props) {
   const freeCancelCount = hotels.filter((h) => h.freeCancellation).length;
 
   const relatedDestinations = POPULAR_DESTINATIONS.filter((d) => d.slug !== slug).slice(0, 4);
+  const editorial = await getCachedHotelEditorial(dest.city);
 
   const breadcrumb    = breadcrumbJsonLd([
     { name: "Home", url: SITE_URL },
@@ -135,23 +137,27 @@ export default async function DestinationPage({ params }: Props) {
 
       <section className="mx-auto max-w-4xl px-4 py-10">
         <h2 className="mb-4 text-xl font-bold text-slate-900">About Hotels in {dest.city}</h2>
-        <div className="space-y-3 text-sm text-slate-600 leading-relaxed">
-          <p>
-            {dest.city} is one of the world&apos;s most popular travel destinations, offering
-            accommodation options for every budget. From charming boutique hotels to luxury 5-star
-            resorts, {dest.city} has something for every traveler.
-          </p>
-          <p>
-            Rooms in {dest.city} start at around{" "}
-            <strong><Price usd={minPrice} />/night</strong>{" "}
-            for budget options, with luxury properties available for significantly more.
-          </p>
-          <p>
-            {SITE_NAME} searches across Booking.com, Hotels.com, Agoda, and more to find you the
-            best available rates in {dest.city}. Many hotels offer free cancellation — look for the
-            green badge when searching.
-          </p>
-        </div>
+        {editorial ? (
+          <p className="text-sm text-slate-600 leading-relaxed">{editorial}</p>
+        ) : (
+          <div className="space-y-3 text-sm text-slate-600 leading-relaxed">
+            <p>
+              {dest.city} is one of the world&apos;s most popular travel destinations, offering
+              accommodation options for every budget. From charming boutique hotels to luxury 5-star
+              resorts, {dest.city} has something for every traveler.
+            </p>
+            <p>
+              Rooms in {dest.city} start at around{" "}
+              <strong><Price usd={minPrice} />/night</strong>{" "}
+              for budget options, with luxury properties available for significantly more.
+            </p>
+            <p>
+              {SITE_NAME} searches across Booking.com, Hotels.com, Agoda, and more to find you the
+              best available rates in {dest.city}. Many hotels offer free cancellation — look for the
+              green badge when searching.
+            </p>
+          </div>
+        )}
       </section>
 
       <section className="mx-auto max-w-7xl px-4 py-8 border-t border-slate-200">
