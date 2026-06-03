@@ -42,12 +42,12 @@ export function websiteJsonLd() {
       "@type": "SearchAction",
       target: {
         "@type": "EntryPoint",
-        urlTemplate: `${SITE_URL}/search?destination={destination}&checkin={checkinDate}&checkout={checkoutDate}`,
+        urlTemplate: `${SITE_URL}/search?destination={destination}&checkin={checkin}&checkout={checkout}`,
       },
       "query-input": [
         "required name=destination",
-        "required name=checkinDate",
-        "required name=checkoutDate",
+        "required name=checkin",
+        "required name=checkout",
       ],
     },
   };
