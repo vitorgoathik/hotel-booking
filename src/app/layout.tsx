@@ -121,6 +121,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
         )}
       </head>
       <body className={`min-h-screen bg-slate-50 text-slate-900 antialiased ${fontClass}`}>
+        <NextIntlClientProvider messages={messages}>
         <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/95 backdrop-blur">
           <nav
             className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3"
@@ -147,12 +148,10 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
           </nav>
         </header>
 
-        <NextIntlClientProvider messages={messages}>
-          <CurrencyProvider currency={currency}>
-            <main>{children}</main>
-          </CurrencyProvider>
-          <RegionalFloatingAd />
-        </NextIntlClientProvider>
+        <CurrencyProvider currency={currency}>
+          <main>{children}</main>
+        </CurrencyProvider>
+        <RegionalFloatingAd />
 
         <footer className="mt-16 border-t border-slate-200 bg-white">
           <div className="mx-auto max-w-7xl px-4 py-10">
@@ -221,6 +220,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
           </div>
         </footer>
         <Analytics />
+        </NextIntlClientProvider>
       </body>
     </html>
   );
