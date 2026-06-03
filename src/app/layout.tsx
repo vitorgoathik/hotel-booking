@@ -2,7 +2,14 @@ import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 import { headers } from "next/headers";
 import Link from "next/link";
-import { Sarabun } from "next/font/google";
+import {
+  Sarabun,
+  Noto_Sans_JP,
+  Noto_Sans_SC,
+  Noto_Sans_TC,
+  Noto_Sans_KR,
+  Noto_Sans_Arabic,
+} from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages, getTranslations } from "next-intl/server";
@@ -19,6 +26,20 @@ const sarabun = Sarabun({
   variable: "--font-sarabun",
   display: "swap",
 });
+const notoJP = Noto_Sans_JP({ subsets: ["latin"], weight: ["400", "700"], variable: "--font-noto-jp", display: "swap" });
+const notoSC = Noto_Sans_SC({ subsets: ["latin"], weight: ["400", "700"], variable: "--font-noto-sc", display: "swap" });
+const notoTC = Noto_Sans_TC({ subsets: ["latin"], weight: ["400", "700"], variable: "--font-noto-tc", display: "swap" });
+const notoKR = Noto_Sans_KR({ subsets: ["latin"], weight: ["400", "700"], variable: "--font-noto-kr", display: "swap" });
+const notoAR = Noto_Sans_Arabic({ subsets: ["arabic"], weight: ["400", "700"], variable: "--font-noto-ar", display: "swap" });
+
+const LOCALE_FONT_CLASS: Record<string, string> = {
+  th: sarabun.className,
+  ja: notoJP.className,
+  zh: notoSC.className,
+  "zh-TW": notoTC.className,
+  ko: notoKR.className,
+  ar: notoAR.className,
+};
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -81,8 +102,10 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
   const t        = await getTranslations("nav");
   const tf       = await getTranslations("footer");
 
+  const fontClass = LOCALE_FONT_CLASS[locale] ?? "";
+
   return (
-    <html lang={locale} className={sarabun.variable}>
+    <html lang={locale} dir={locale === "ar" ? "rtl" : "ltr"}>
       <head>
         <meta name="agd-partner-manual-verification" />
         <script
@@ -97,7 +120,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
           />
         )}
       </head>
-      <body className={`${sarabun.className} min-h-screen bg-slate-50 text-slate-900 antialiased`}>
+      <body className={`min-h-screen bg-slate-50 text-slate-900 antialiased ${fontClass}`}>
         <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/95 backdrop-blur">
           <nav
             className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3"
@@ -119,7 +142,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
                   {t("deals")}
                 </Link>
               </div>
-              <LanguageSelector locales={["en", "th"]} />
+              <LanguageSelector locales={["en","th","es","ru","pt-BR","fr","ja","zh","zh-TW","ar","de","id","ko","it","vi"]} />
             </div>
           </nav>
         </header>
