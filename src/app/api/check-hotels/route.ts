@@ -3,6 +3,23 @@ import { NextResponse } from "next/server";
 export async function GET() {
   // Strip UTF-8 BOM that may be prepended when the key is copy-pasted from certain editors
   const key = (process.env.RAPIDAPI_KEY ?? "").replace(/^﻿/, "") || undefined;
+  const results: Record<string, number> = {};
+  // Probe several hotel APIs to find which one the key is subscribed to
+  for (const host of [
+    "hotels-com-provider",
+    "hotels4",
+    "booking-com15",
+    "expedia2",
+    "priceline-com-provider",
+  ]) {
+    try {
+      const r = await fetch(`https://${host}.p.rapidapi.com/`, {
+        headers: { "x-rapidapi-host": `${host}.p.rapidapi.com`, "x-rapidapi-key": key ?? "" },
+        cache: "no-store",
+      });
+      results[host] = r.status;
+    } catch { results[host] = 0; }
+  }
 
   if (!key) {
     return NextResponse.json({ ok: false, error: "RAPIDAPI_KEY not set" }, { status: 500 });
@@ -25,6 +42,7 @@ export async function GET() {
       ok: res.ok && !!first,
       status: res.status,
       firstResult: first?.regionNames?.shortName ?? null,
+      apiProbe: results,
     });
   } catch (err) {
     return NextResponse.json({ ok: false, error: String(err) }, { status: 500 });
