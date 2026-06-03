@@ -51,20 +51,18 @@ export function HotelCard({ hotel, nights, checkin, checkout, guests, rooms, onS
   const ratingLabel = getRatingLabel(hotel.rating);
 
   return (
-    <article className="flex flex-col sm:flex-row gap-0 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition-all hover:shadow-md">
-      {/* Left color band */}
-      <div className="hidden sm:flex w-2 shrink-0 bg-amber-500 rounded-l-xl" />
+    <article className="flex flex-col sm:flex-row overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition-all hover:shadow-md">
+      {/* Hotel photo — full-width on mobile, left thumbnail on desktop */}
+      {hotel.photoUrl && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={hotel.photoUrl}
+          alt={hotel.name}
+          className="w-full h-40 object-cover sm:w-32 sm:h-full sm:rounded-l-xl rounded-t-xl shrink-0"
+        />
+      )}
 
       <div className="flex flex-1 flex-col sm:flex-row gap-4 p-4">
-        {/* Real photo */}
-        {hotel.photoUrl && (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={hotel.photoUrl}
-            alt={hotel.name}
-            className="hidden sm:block w-32 h-28 rounded-lg object-cover shrink-0"
-          />
-        )}
 
         {/* Info */}
         <div className="flex-1 min-w-0">

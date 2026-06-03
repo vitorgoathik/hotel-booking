@@ -69,6 +69,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
       </div>
 
       <SearchPageClient
+        key={`${destination}-${checkin}-${checkout}-${guests}-${rooms}`}
         destination={destination}
         country={country}
         checkin={checkin}
@@ -79,6 +80,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
       />
 
       <HotelAffiliateLinks
+        key={`aff-${destination}-${checkin}-${checkout}`}
         destination={destination}
         checkin={checkin}
         checkout={checkout}
