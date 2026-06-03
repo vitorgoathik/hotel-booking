@@ -108,6 +108,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
     <html lang={locale} dir={locale === "ar" ? "rtl" : "ltr"}>
       <head>
         <meta name="agd-partner-manual-verification" />
+        <meta name="fo-verify" content="91de7d61-bf02-4b4c-b125-02ec4fa89211" />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd()) }}
