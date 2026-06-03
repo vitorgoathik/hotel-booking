@@ -1,50 +1,49 @@
 import { NextResponse } from "next/server";
 
-export async function GET() {
-  // Strip UTF-8 BOM that may be prepended when the key is copy-pasted from certain editors
-  const key = (process.env.RAPIDAPI_KEY ?? "").replace(/^﻿/, "") || undefined;
-  const results: Record<string, number> = {};
-  // Probe several hotel APIs to find which one the key is subscribed to
-  for (const host of [
-    "hotels-com-provider",
-    "hotels4",
-    "booking-com15",
-    "expedia2",
-    "priceline-com-provider",
-  ]) {
-    try {
-      const r = await fetch(`https://${host}.p.rapidapi.com/`, {
-        headers: { "x-rapidapi-host": `${host}.p.rapidapi.com`, "x-rapidapi-key": key ?? "" },
-        cache: "no-store",
-      });
-      results[host] = r.status;
-    } catch { results[host] = 0; }
-  }
+const key = () => (process.env.RAPIDAPI_KEY ?? "").replace(/^﻿/, "");
 
-  if (!key) {
+async function probe(host: string, path: string): Promise<{ status: number; body: unknown }> {
+  try {
+    const r = await fetch(`https://${host}.p.rapidapi.com${path}`, {
+      headers: { "x-rapidapi-host": `${host}.p.rapidapi.com`, "x-rapidapi-key": key() },
+      cache: "no-store",
+    });
+    const body = await r.json().catch(() => null);
+    return { status: r.status, body };
+  } catch (e) {
+    return { status: 0, body: String(e) };
+  }
+}
+
+export async function GET() {
+  if (!key()) {
     return NextResponse.json({ ok: false, error: "RAPIDAPI_KEY not set" }, { status: 500 });
   }
 
-  try {
-    const res = await fetch(
-      "https://hotels-com-provider.p.rapidapi.com/v2/regions?query=Bangkok&locale=en_US&domain=US",
-      {
-        headers: {
-          "x-rapidapi-host": "hotels-com-provider.p.rapidapi.com",
-          "x-rapidapi-key": key,
-        },
-        cache: "no-store",
-      },
-    );
-    const json = await res.json();
-    const first = json?.data?.[0];
-    return NextResponse.json({
-      ok: res.ok && !!first,
-      status: res.status,
-      firstResult: first?.regionNames?.shortName ?? null,
-      apiProbe: results,
-    });
-  } catch (err) {
-    return NextResponse.json({ ok: false, error: String(err) }, { status: 500 });
-  }
+  // Test real search endpoints on both APIs simultaneously
+  const [hcp, bc15] = await Promise.all([
+    probe(
+      "hotels-com-provider",
+      "/v2/regions?query=Bangkok&locale=en_US&domain=US",
+    ),
+    probe(
+      "booking-com15",
+      "/api/v1/hotels/searchDestination?query=Bangkok",
+    ),
+  ]);
+
+  return NextResponse.json({
+    "hotels-com-provider": {
+      status: hcp.status,
+      ok: hcp.status === 200,
+      firstResult:
+        (hcp.body as { data?: Array<{ regionNames?: { shortName?: string } }> })?.data?.[0]?.regionNames?.shortName ?? null,
+    },
+    "booking-com15": {
+      status: bc15.status,
+      ok: bc15.status === 200,
+      firstResult:
+        (bc15.body as { data?: Array<{ label?: string }> })?.data?.[0]?.label ?? null,
+    },
+  });
 }
