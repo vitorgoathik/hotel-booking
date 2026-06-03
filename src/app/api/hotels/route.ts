@@ -12,7 +12,7 @@ const cachedSearch = unstable_cache(
     rooms: number,
   ) => searchRealHotels(destination, country, checkin, checkout, adults, rooms),
   ["hotel-search"],
-  { revalidate: 600 },
+  { revalidate: 3600 }, // 1 hour — reduces RapidAPI calls significantly
 );
 
 export async function GET(req: NextRequest) {
