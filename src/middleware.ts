@@ -1,25 +1,19 @@
 import createMiddleware from "next-intl/middleware";
-import { routing } from "./i18n/routing";
 import { type NextRequest, NextResponse } from "next/server";
+import { routing } from "./i18n/routing";
 
 const COUNTRY_LOCALE: Record<string, string> = {
   TH: "th",
   ES: "es", MX: "es", AR: "es", CO: "es", CL: "es", PE: "es", VE: "es",
-  EC: "es", UY: "es", BO: "es", PY: "es", DO: "es", GT: "es", HN: "es",
-  SV: "es", NI: "es", CR: "es", PA: "es", CU: "es",
+  UY: "es", PY: "es", BO: "es", EC: "es", CR: "es", PA: "es", DO: "es",
+  GT: "es", HN: "es", SV: "es", NI: "es", CU: "es",
   BR: "pt-BR", PT: "pt-BR",
   FR: "fr", BE: "fr", CH: "fr", CA: "fr", LU: "fr", MC: "fr",
-  JP: "ja",
-  CN: "zh",
-  TW: "zh-TW", HK: "zh-TW", MO: "zh-TW",
+  JP: "ja", CN: "zh", TW: "zh-TW", HK: "zh-TW", MO: "zh-TW",
   SA: "ar", AE: "ar", EG: "ar", KW: "ar", QA: "ar",
   BH: "ar", OM: "ar", JO: "ar", LB: "ar", MA: "ar",
   DZ: "ar", TN: "ar", LY: "ar", IQ: "ar", SY: "ar", YE: "ar",
-  DE: "de", AT: "de",
-  ID: "id",
-  KR: "ko",
-  IT: "it",
-  VN: "vi",
+  DE: "de", AT: "de", ID: "id", KR: "ko", IT: "it", VN: "vi",
   RU: "ru", UA: "ru", KZ: "ru", BY: "ru",
 };
 
@@ -28,41 +22,36 @@ const intlMiddleware = createMiddleware(routing);
 export function middleware(req: NextRequest) {
   const { pathname, searchParams } = req.nextUrl;
 
-  // Dev override: ?dev=1&country=th — redirect to locale-prefixed URL
   if (searchParams.get("dev") === "1") {
-    const devParam = searchParams.get("country") ?? "";
-    const locale = (routing.locales as readonly string[]).includes(devParam)
-      ? devParam
-      : (COUNTRY_LOCALE[devParam.toUpperCase()] ?? "en");
-    if (locale !== "en" && !pathname.startsWith(`/${locale}`)) {
-      const url = req.nextUrl.clone();
-      url.pathname = `/${locale}${pathname}`;
-      url.searchParams.delete("dev");
-      url.searchParams.delete("country");
-      return NextResponse.redirect(url);
+    const devParam = searchParams.get("country");
+    if (devParam) {
+      const isLocale = (routing.locales as readonly string[]).includes(devParam);
+      const asISO = devParam.toUpperCase();
+      const locale = isLocale ? devParam : (COUNTRY_LOCALE[asISO] ?? "en");
+      if (locale !== "en" && !pathname.startsWith(`/${locale}`)) {
+        const url = req.nextUrl.clone();
+        url.pathname = `/${locale}${pathname}`;
+        const res = NextResponse.redirect(url);
+        res.headers.set("x-burrowsoft-geo", asISO);
+        return res;
+      }
     }
   }
 
-  // Geo-redirect on first visit: send non-English countries to their locale prefix
   const hasLocalePrefix = (routing.locales as readonly string[]).some(
-    (l) => l !== "en" && (pathname.startsWith(`/${l}/`) || pathname === `/${l}`),
+    l => l !== routing.defaultLocale && pathname.startsWith(`/${l}`)
   );
-  const isApiOrAsset = /^\/(api|_next|favicon|BingSiteAuth)/.test(pathname);
+  const isApiOrAsset = /^\/(api|_next|favicon|.*\..*)/.test(pathname);
 
   if (!hasLocalePrefix && !isApiOrAsset && !req.cookies.has("NEXT_LOCALE")) {
-    const country = req.headers.get("x-vercel-ip-country")
-      ?? req.headers.get("cf-ipcountry")
-      ?? "US";
+    const country = req.headers.get("x-vercel-ip-country") ?? req.headers.get("cf-ipcountry") ?? "US";
     const locale = COUNTRY_LOCALE[country] ?? "en";
     if (locale !== "en") {
       const url = req.nextUrl.clone();
       url.pathname = `/${locale}${pathname}`;
       const res = NextResponse.redirect(url, { status: 302 });
-      res.cookies.set("NEXT_LOCALE", locale, {
-        maxAge: 60 * 60 * 24 * 365,
-        path: "/",
-        sameSite: "lax",
-      });
+      res.cookies.set("NEXT_LOCALE", locale, { maxAge: 60*60*24*365, path: "/", sameSite: "lax" });
+      res.headers.set("x-burrowsoft-geo", country);
       return res;
     }
   }
@@ -71,5 +60,5 @@ export function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!api|_next/static|_next/image|favicon|BingSiteAuth|.*\\..*).*)"],
+  matcher: ["/((?!api|_next/static|_next/image|favicon|.*\\..*).*)", "/"],
 };

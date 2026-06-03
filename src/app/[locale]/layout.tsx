@@ -45,54 +45,65 @@ const LOCALE_FONT_CLASS: Record<string, string> = {
 
 const BASE = "https://www.bookingmole.com";
 
-export const metadata: Metadata = {
-  metadataBase: new URL(SITE_URL),
-  title: {
-    default: `${SITE_NAME} — Compare & Book Hotels Worldwide`,
-    template: `%s | ${SITE_NAME}`,
-  },
-  description: SITE_DESCRIPTION,
-  keywords: [
-    "cheap hotels", "book hotels", "compare hotels", "hotel deals",
-    "hotel booking", "best hotel prices", "discount hotels",
-    "last minute hotels", "vacation rentals",
-  ],
-  authors:  [{ name: SITE_NAME }],
-  creator:  SITE_NAME,
-  openGraph: {
-    type: "website",
-    locale: "en_US",
-    url: SITE_URL,
-    siteName: SITE_NAME,
-    title: `${SITE_NAME} — Compare & Book Hotels Worldwide`,
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+
+  const languages = Object.fromEntries(
+    routing.locales.map((l) => [
+      l,
+      l === "en" ? `${BASE}/` : `${BASE}/${l}/`,
+    ])
+  );
+  languages["x-default"] = `${BASE}/`;
+
+  return {
+    metadataBase: new URL(SITE_URL),
+    title: {
+      default: `${SITE_NAME} — Compare & Book Hotels Worldwide`,
+      template: `%s | ${SITE_NAME}`,
+    },
     description: SITE_DESCRIPTION,
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: `${SITE_NAME} — Compare & Book Hotels Worldwide`,
-    description: SITE_DESCRIPTION,
-  },
-  alternates: {
-    canonical: `${BASE}/`,
-    languages: Object.fromEntries(
-      routing.locales.map((locale) => [
-        locale,
-        locale === "en" ? `${BASE}/` : `${BASE}/${locale}/`,
-      ])
-    ),
-  },
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: {
+    keywords: [
+      "cheap hotels", "book hotels", "compare hotels", "hotel deals",
+      "hotel booking", "best hotel prices", "discount hotels",
+      "last minute hotels", "vacation rentals",
+    ],
+    authors:  [{ name: SITE_NAME }],
+    creator:  SITE_NAME,
+    openGraph: {
+      type: "website",
+      locale: locale.replace("-", "_"),
+      url: locale === "en" ? `${BASE}/` : `${BASE}/${locale}/`,
+      siteName: SITE_NAME,
+      title: `${SITE_NAME} — Compare & Book Hotels Worldwide`,
+      description: SITE_DESCRIPTION,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${SITE_NAME} — Compare & Book Hotels Worldwide`,
+      description: SITE_DESCRIPTION,
+    },
+    alternates: {
+      canonical: locale === "en" ? `${BASE}/` : `${BASE}/${locale}/`,
+      languages,
+    },
+    robots: {
       index: true,
       follow: true,
-      "max-video-preview": -1,
-      "max-image-preview": "large",
-      "max-snippet": -1,
+      googleBot: {
+        index: true,
+        follow: true,
+        "max-video-preview": -1,
+        "max-image-preview": "large",
+        "max-snippet": -1,
+      },
     },
-  },
-};
+  };
+}
 
 export const viewport: Viewport = {
   width: "device-width",
