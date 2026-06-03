@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import type { Hotel } from "@/lib/types";
 import { getNights } from "@/lib/data";
+import { buildHotelAffiliateLinks } from "@burrowsoft/shared";
 import { getBookingOptions } from "@/lib/affiliate";
 import { useFormatPrice } from "./CurrencyProvider";
 
@@ -180,6 +181,15 @@ function ModalInner({ hotel, onClose }: { hotel: Hotel; onClose: () => void }) {
     hotel.city, checkin, checkout, guests, rooms,
     hotel.bookingComId, hotel.bookingComDestId,
   );
+
+  const affiliateLinks = buildHotelAffiliateLinks({
+    destination: hotel.city,
+    checkin,
+    checkout,
+    guests,
+    rooms,
+    country: "",
+  });
 
   // Keyboard / scroll lock
   useEffect(() => {
@@ -439,27 +449,29 @@ function ModalInner({ hotel, onClose }: { hotel: Hotel; onClose: () => void }) {
             ))}
 
             {/* Other platforms */}
-            <div>
-              <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">
-                {t("otherPlatforms")}
-              </p>
-              <div className="overflow-hidden rounded-xl border border-slate-200 divide-y divide-slate-100">
-                {options.filter((o) => !o.isBookingCom).map((opt) => (
-                  <a
-                    key={opt.label}
-                    href={opt.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center justify-between px-4 py-3 hover:bg-slate-50 transition-colors"
-                  >
-                    <span className="text-sm font-semibold text-slate-800">{opt.label}</span>
-                    <span className="rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-200 transition-colors">
-                      {t("searchLink")}
-                    </span>
-                  </a>
-                ))}
+            {affiliateLinks.length > 0 && (
+              <div>
+                <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">
+                  {t("otherPlatforms")}
+                </p>
+                <div className="overflow-hidden rounded-xl border border-slate-200 divide-y divide-slate-100">
+                  {affiliateLinks.map((link) => (
+                    <a
+                      key={link.id}
+                      href={link.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-between px-4 py-3 hover:bg-slate-50 transition-colors"
+                    >
+                      <span className="text-sm font-semibold text-slate-800">{link.name}</span>
+                      <span className="rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-200 transition-colors">
+                        {t("searchLink")}
+                      </span>
+                    </a>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
 
             <p className="text-center text-xs text-slate-400">
               {isReal ? t("liveNote") : t("searchNote", { city: hotel.city })}

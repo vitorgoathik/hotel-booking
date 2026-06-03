@@ -2,6 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import type { Hotel } from "@/lib/types";
+import { buildHotelAffiliateLinks } from "@burrowsoft/shared";
 import { getRatingLabel } from "@/lib/data";
 import { Price } from "./Price";
 
@@ -191,13 +192,20 @@ export function HotelCard({ hotel, nights, checkin, checkout, guests, rooms, onS
               {t("bookOn", { provider: "Booking.com" })}
             </a>
 
-            {/* Secondary: full comparison modal */}
-            <button
-              onClick={() => onSelect(hotel)}
-              className="block w-full rounded-xl border border-slate-200 bg-white px-4 py-2 text-center text-xs font-medium text-slate-600 hover:bg-slate-50 transition-colors"
-            >
-              {t("compareAll")}
-            </button>
+            {/* Secondary: Expedia + Trip.com deep links */}
+            <div className="flex gap-1.5">
+              {buildHotelAffiliateLinks({ destination: hotel.city, checkin, checkout, guests, rooms, country: "" }).map((link) => (
+                <a
+                  key={link.id}
+                  href={link.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex-1 rounded-xl border border-slate-200 bg-white px-2 py-2 text-center text-xs font-medium text-slate-600 hover:bg-slate-50 hover:border-slate-300 transition-colors"
+                >
+                  {link.name} ↗
+                </a>
+              ))}
+            </div>
           </div>
         </div>
       </div>
