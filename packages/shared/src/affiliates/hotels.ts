@@ -88,31 +88,18 @@ const AFFILIATES: Array<HotelAffiliateLink & {
       return `https://www.expedia.com/Hotel-Search?${params}`;
     },
   },
-  {
-    id: "tripcom",
-    name: "Trip.com",
-    description: "Great deals on hotels across Asia",
-    url: "",
-    // Only show for Asian destinations — Trip.com has thin inventory for EU/US cities
-    showFor: ({ destination }) => isAsianDestination(destination),
-    buildUrl: ({ destination, checkin, checkout, guests, rooms }) => {
-      // Trip.com's /hotels/list endpoint ignores text city names and requires
-      // internal numeric city IDs. Their SEO hotel pages accept city name slugs
-      // and honour date/guest query params — use those instead.
-      const slug = destination.toLowerCase().replace(/\s+/g, "-");
-      const params = new URLSearchParams({
-        checkIn: checkin,
-        checkOut: checkout,
-        adult: String(guests),
-        room: String(rooms),
-        Allianceid: "8495775",
-        SID: "316966000",
-        trip_sub1: "",
-        trip_sub3: "D17566096",
-      });
-      return `https://www.trip.com/hotels/${slug}-hotels/?${params}`;
-    },
-  },
+  // Trip.com hotels — DISABLED: deep-linking requires internal numeric city IDs
+  // which are not publicly available. /hotels/list ignores text names; slug URLs
+  // return 404. Re-enable once Trip.com developer portal access is obtained and
+  // a city ID mapping is built.
+  // {
+  //   id: "tripcom",
+  //   name: "Trip.com",
+  //   description: "Great deals on hotels across Asia",
+  //   url: "",
+  //   showFor: ({ destination }) => isAsianDestination(destination),
+  //   buildUrl: ({ destination, checkin, checkout, guests, rooms }) => { ... },
+  // },
 
   // ── Country-specific partners (add future ones here) ──────────────────────
   // {
