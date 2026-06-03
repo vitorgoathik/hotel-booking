@@ -53,7 +53,8 @@ const AFFILIATES: Array<Omit<HotelAffiliateLink, "url"> & {
     id: "tripcom",
     name: "Trip.com",
     description: "Great deals on hotels worldwide",
-    countries: "all",
+    // Trip.com hotel inventory is Asia-centric — thin/no results for EU/US destinations
+    countries: ["CN","JP","KR","SG","TH","TW","HK","MY","ID","PH","VN","IN","MO","MM","KH","LA","BN","MV","LK","NP","BD","PK"],
     buildUrl: ({ destination, checkin, checkout, guests, rooms }) => {
       const params = new URLSearchParams({
         display: destination,
