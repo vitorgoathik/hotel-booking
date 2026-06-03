@@ -10,20 +10,21 @@ export async function GET() {
 
   try {
     const res = await fetch(
-      "https://booking-com15.p.rapidapi.com/api/v1/hotels/searchDestination?query=Bangkok",
+      "https://hotels-com-provider.p.rapidapi.com/v2/regions?query=Bangkok&locale=en_US&domain=US",
       {
         headers: {
-          "x-rapidapi-host": "booking-com15.p.rapidapi.com",
+          "x-rapidapi-host": "hotels-com-provider.p.rapidapi.com",
           "x-rapidapi-key": key,
         },
         cache: "no-store",
       },
     );
     const json = await res.json();
+    const first = json?.data?.[0];
     return NextResponse.json({
-      ok: res.ok && json.status === true,
+      ok: res.ok && !!first,
       status: res.status,
-      firstResult: json.data?.[0]?.label ?? null,
+      firstResult: first?.regionNames?.shortName ?? null,
     });
   } catch (err) {
     return NextResponse.json({ ok: false, error: String(err) }, { status: 500 });

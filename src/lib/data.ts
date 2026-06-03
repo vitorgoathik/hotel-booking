@@ -309,8 +309,6 @@ export function generateHotels(city: string, checkin: string): Hotel[] {
       freeCancellation,
       breakfastIncluded,
       roomsLeft,
-      // Consistent seeded placeholder so cards always show a photo
-      photoUrl: `https://picsum.photos/seed/${citySlug}-${i + 1}/640/400`,
     });
   }
 

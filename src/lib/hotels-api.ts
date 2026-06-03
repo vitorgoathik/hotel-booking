@@ -1,36 +1,35 @@
 import type { Hotel } from "./types";
 
-const RAPIDAPI_HOST = "booking-com15.p.rapidapi.com";
-const BASE = `https://${RAPIDAPI_HOST}/api/v1/hotels`;
+const RAPIDAPI_HOST = "hotels-com-provider.p.rapidapi.com";
+const BASE          = `https://${RAPIDAPI_HOST}/v2`;
 
-function headers(): HeadersInit {
-  // Strip UTF-8 BOM (U+FEFF) that can appear when the key is pasted from certain editors
+function apiHeaders(): HeadersInit {
   const key = (process.env.RAPIDAPI_KEY ?? "").replace(/^﻿/, "");
   return {
     "x-rapidapi-host": RAPIDAPI_HOST,
-    "x-rapidapi-key": key,
+    "x-rapidapi-key":  key,
   };
 }
 
-// ── Destination lookup ────────────────────────────────────────────────────────
+// ── Region lookup ─────────────────────────────────────────────────────────────
 
-export interface DestResult {
-  dest_id: string;
-  search_type: string;
-  label: string;
-}
-
-export async function searchDestination(query: string): Promise<DestResult | null> {
+async function searchRegion(query: string): Promise<string | null> {
   try {
-    const res = await fetch(
-      `${BASE}/searchDestination?query=${encodeURIComponent(query)}`,
-      { headers: headers(), next: { revalidate: 86400 } },
-    );
+    const url = `${BASE}/regions?` + new URLSearchParams({
+      query,
+      locale: "en_US",
+      domain: "US",
+    });
+    const res = await fetch(url, {
+      headers: apiHeaders(),
+      next: { revalidate: 86400 },
+    });
     if (!res.ok) return null;
     const json = await res.json();
-    if (!json.status || !Array.isArray(json.data) || json.data.length === 0) return null;
-    const city = json.data.find((d: DestResult) => d.search_type === "city") ?? json.data[0];
-    return { dest_id: city.dest_id, search_type: city.search_type, label: city.label ?? query };
+    const items: Array<{ gaiaId?: string; type?: string }> = json?.data ?? [];
+    // prefer city-type result; fall back to first result
+    const city = items.find((d) => d.type === "CITY") ?? items[0];
+    return city?.gaiaId ?? null;
   } catch {
     return null;
   }
@@ -38,61 +37,66 @@ export async function searchDestination(query: string): Promise<DestResult | nul
 
 // ── Hotel search ──────────────────────────────────────────────────────────────
 
-function parseLabel(label: string) {
-  const l = label.toLowerCase();
-  const freeCancellation  = l.includes("free cancellation");
-  const breakfastIncluded = l.includes("breakfast included");
-  const m = label.match(/only (\d+) left/i);
-  const roomsLeft = m?.[1] != null ? parseInt(m[1], 10) : 10;
-  return { freeCancellation, breakfastIncluded, roomsLeft };
+interface RawProperty {
+  id?: string;
+  name?: string;
+  star?: number;
+  reviews?: { score?: number; total?: number; localizedAdvisory?: string };
+  price?: {
+    lead?: { amount?: number; currencyInfo?: { code?: string } };
+    strikeOut?: { amount?: number };
+  };
+  propertyImage?: { image?: { url?: string } };
+  gallery?: Array<{ image?: { url?: string } }>;
+  coordinates?: { lat?: number; lon?: number };
+  amenities?: Array<{ text?: string }>;
+  availability?: { available?: boolean; minRoomsLeft?: number };
+  offerBadge?: { primary?: { text?: string } };
 }
 
-function mapHotel(
-  raw: Record<string, unknown>,
-  city: string,
-  country: string,
-  nights: number,
-  destId: string,
-): Hotel {
-  const prop  = raw.property as Record<string, unknown>;
-  const price = prop.priceBreakdown as Record<string, unknown>;
-  const gross  = (price.grossPrice  as Record<string, number>).value ?? 0;
-  const strike = (price.strikethroughPrice as Record<string, number> | undefined)?.value;
+function mapProperty(raw: RawProperty, city: string, country: string, nights: number): Hotel | null {
+  const price = raw.price?.lead?.amount;
+  if (!price) return null;
 
-  const pricePerNight    = Math.round(gross / nights);
-  const originalPerNight = strike != null ? Math.round(strike / nights) : undefined;
+  const pricePerNight = Math.round(price / Math.max(nights, 1));
+  const strikeAmount  = raw.price?.strikeOut?.amount;
+  const originalPrice = strikeAmount ? Math.round(strikeAmount / Math.max(nights, 1)) : undefined;
 
-  const starRaw = (prop.accuratePropertyClass as number) || (prop.propertyClass as number) || 0;
-  const stars   = Math.min(5, Math.max(1, starRaw));
+  const stars  = Math.min(5, Math.max(1, Math.round(raw.star ?? 3)));
+  const rating = raw.reviews?.score ?? 0;
+  const reviewCount = raw.reviews?.total ?? 0;
 
-  const { freeCancellation, breakfastIncluded, roomsLeft } = parseLabel(
-    (raw.accessibilityLabel as string) ?? "",
-  );
+  const photoUrl = raw.propertyImage?.image?.url ?? raw.gallery?.[0]?.image?.url;
+  const photos   = (raw.gallery ?? []).map((g) => g.image?.url).filter(Boolean) as string[];
 
-  const photoUrls = (prop.photoUrls as string[] | undefined) ?? [];
-  const photos    = photoUrls.slice(0, 10).map((u) => u.replace("square500", "square1024"));
-  const photoUrl  = photos[0];
+  const badge = (raw.offerBadge?.primary?.text ?? "").toLowerCase();
+  const freeCancellation  = badge.includes("free cancellation") || badge.includes("cancel");
+  const breakfastIncluded = badge.includes("breakfast");
+  const roomsLeft = raw.availability?.minRoomsLeft ?? 10;
+
+  const amenities = (raw.amenities ?? [])
+    .map((a) => a.text)
+    .filter((t): t is string => Boolean(t))
+    .slice(0, 10);
 
   return {
-    id:               String(raw.hotel_id),
-    name:             (prop.name as string) ?? "Hotel",
+    id:               raw.id ?? `${city}-unknown`,
+    name:             raw.name ?? "Hotel",
     stars,
-    rating:           (prop.reviewScore  as number) ?? 0,
-    reviewCount:      (prop.reviewCount  as number) ?? 0,
+    rating,
+    reviewCount,
     pricePerNight,
-    originalPrice:    originalPerNight,
+    originalPrice,
     city,
     country,
-    address:          (prop.wishlistName as string) ?? city,
-    amenities:        [],
+    address:          city,
+    amenities,
     distanceToCenter: 0,
     freeCancellation,
     breakfastIncluded,
     roomsLeft,
-    latitude:         (prop.latitude  as number | undefined),
-    longitude:        (prop.longitude as number | undefined),
-    bookingComId:     raw.hotel_id as number,
-    bookingComDestId: destId,
+    latitude:         raw.coordinates?.lat,
+    longitude:        raw.coordinates?.lon,
     photoUrl,
     photos,
   };
@@ -113,40 +117,35 @@ export async function searchRealHotels(
     Math.round((new Date(checkout).getTime() - new Date(checkin).getTime()) / 86400000),
   );
 
-  const dest = await searchDestination(city);
-  if (!dest) return null;
-
-  const params = new URLSearchParams({
-    dest_id:        dest.dest_id,
-    search_type:    dest.search_type,
-    arrival_date:   checkin,
-    departure_date: checkout,
-    adults:         String(adults),
-    room_qty:       String(rooms),
-    units:          "imperial",
-    page_number:    "1",
-    currency_code:  "USD",
-    languagecode:   "en-us",
-  });
+  const regionId = await searchRegion(city);
+  if (!regionId) return null;
 
   try {
-    const res = await fetch(`${BASE}/searchHotels?${params}`, {
-      headers: headers(),
+    const url = `${BASE}/hotels/search?` + new URLSearchParams({
+      regionId,
+      checkIn:  checkin,
+      checkOut: checkout,
+      adults:   String(adults),
+      rooms:    String(rooms),
+      locale:   "en_US",
+      domain:   "US",
+      currency: "USD",
+      sort:     "PRICE_LOW_TO_HIGH",
+    });
+    const res = await fetch(url, {
+      headers: apiHeaders(),
       next: { revalidate: 900 },
     });
     if (!res.ok) return null;
-    const json = await res.json();
-    if (!json.status || !Array.isArray(json.data?.hotels)) return null;
 
-    return (json.data.hotels as Record<string, unknown>[])
-      .filter((h) => {
-        const prop  = h.property as Record<string, unknown>;
-        const price = prop?.priceBreakdown as Record<string, unknown> | undefined;
-        return price?.grossPrice != null;
-      })
-      .slice(0, 10)
-      .map((h) => mapHotel(h, city, country, nights, dest.dest_id))
-      .sort((a, b) => a.pricePerNight - b.pricePerNight);
+    const json = await res.json();
+    const properties: RawProperty[] =
+      json?.data?.propertySearch?.properties ?? [];
+
+    return properties
+      .map((p) => mapProperty(p, city, country, nights))
+      .filter((h): h is Hotel => h !== null)
+      .slice(0, 10);
   } catch {
     return null;
   }
