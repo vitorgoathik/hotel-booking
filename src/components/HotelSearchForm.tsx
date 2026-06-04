@@ -17,8 +17,7 @@ const tomorrow = new Date(Date.now() + 86400000).toISOString().split("T")[0] ?? 
 const threeDaysLater = new Date(Date.now() + 4 * 86400000).toISOString().split("T")[0] ?? "";
 const today = new Date().toISOString().split("T")[0] ?? "";
 
-const initialState: FormState = {
-  destination: "Paris",
+const defaultState: Omit<FormState, "destination"> = {
   checkin: tomorrow,
   checkout: threeDaysLater,
   guests: 2,
@@ -139,10 +138,19 @@ function DestinationInput({
   );
 }
 
-export function HotelSearchForm({ compact = false }: { compact?: boolean }) {
+export function HotelSearchForm({
+  compact = false,
+  defaultDestination = "",
+}: {
+  compact?: boolean;
+  defaultDestination?: string;
+}) {
   const router = useRouter();
   const t = useTranslations("search");
-  const [form, setForm] = useState<FormState>(initialState);
+  const [form, setForm] = useState<FormState>({
+    ...defaultState,
+    destination: defaultDestination,
+  });
   const [error, setError] = useState<string | null>(null);
 
   const set = useCallback(<K extends keyof FormState>(key: K, value: FormState[K]) => {

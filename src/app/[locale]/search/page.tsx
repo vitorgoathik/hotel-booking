@@ -51,7 +51,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
       </nav>
 
       <div className="mb-8">
-        <HotelSearchForm compact />
+        <HotelSearchForm compact defaultDestination={destination} />
       </div>
 
       <div className="mb-4">

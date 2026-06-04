@@ -100,7 +100,7 @@ export default async function DestinationPage({ params }: Props) {
               <p className="text-amber-200 mt-1">{dest.country} · {dest.hotelCount.toLocaleString()} hotels available</p>
             </div>
           </div>
-          <HotelSearchForm />
+          <HotelSearchForm defaultDestination={dest.city} />
         </div>
       </section>
 

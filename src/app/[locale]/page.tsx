@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { HotelSearchForm } from "@/components/HotelSearchForm";
@@ -60,6 +61,11 @@ export default async function HomePage() {
   const th = await getTranslations("hero");
   const ts = await getTranslations("stats");
 
+  // Vercel sets x-vercel-ip-city automatically based on the user's IP
+  const hdrs = await headers();
+  const rawCity = hdrs.get("x-vercel-ip-city") ?? "";
+  const userCity = rawCity ? decodeURIComponent(rawCity) : "";
+
   return (
     <>
       {/* Hero */}
@@ -79,7 +85,7 @@ export default async function HomePage() {
           <p className="mb-10 text-lg text-amber-100 sm:text-xl">
             {th("subtitle")}
           </p>
-          <HotelSearchForm />
+          <HotelSearchForm defaultDestination={userCity} />
         </div>
       </section>
 
