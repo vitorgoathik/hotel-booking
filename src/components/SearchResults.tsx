@@ -4,7 +4,6 @@ import { useState, useMemo } from "react";
 import type { Hotel, SortOption } from "@/lib/types";
 import { HotelCard } from "./HotelCard";
 import { BookingModal } from "./BookingModal";
-import { AdUnit } from "./AdUnit";
 
 interface Props {
   hotels: Hotel[];
@@ -205,14 +204,6 @@ export function SearchResults({ hotels, destination, checkin, checkout, guests, 
                     rooms={rooms}
                     onSelect={setSelected}
                   />
-                  {idx === 2 && (
-                    <AdUnit
-                      key="ad"
-                      slot="SEARCH_MID_SLOT"
-                      format="horizontal"
-                      className="my-2"
-                    />
-                  )}
                 </>
               ))}
             </div>
