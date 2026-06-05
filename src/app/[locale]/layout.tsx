@@ -159,16 +159,16 @@ export default async function LocaleLayout({
               className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3"
               aria-label="Main navigation"
             >
-              <Link href="/" className="flex items-center gap-2.5">
+              <Link href="/" className="flex items-center gap-2">
                 <Image
-                  src="/mascot.svg"
+                  src="/booking.png"
                   alt={SITE_NAME}
-                  width={36}
-                  height={36}
+                  width={40}
+                  height={40}
                   className="shrink-0"
                   priority
                 />
-                <span className="text-lg font-bold tracking-tight">{SITE_NAME}</span>
+                <span className="text-xl font-bold text-amber-600">{SITE_NAME}</span>
               </Link>
               <div className="flex items-center gap-4">
                 <div className="hidden sm:flex items-center gap-6 text-sm font-medium text-slate-600">
@@ -242,7 +242,7 @@ export default async function LocaleLayout({
                     rel="noopener noreferrer"
                     className="flex items-center gap-2 text-slate-600 hover:text-slate-900 transition-colors"
                   >
-                    <span className="text-lg" aria-hidden>🦔</span>
+                    <Image src="/base.png" alt="BurrowSoft" width={28} height={28} className="shrink-0" />
                     <span className="text-sm font-bold tracking-tight">BurrowSoft</span>
                   </a>
                   <ul className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs text-slate-500">

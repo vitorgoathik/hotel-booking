@@ -63,22 +63,22 @@ export default async function HomePage() {
     <>
       {/* Hero */}
       <section
-        className="relative overflow-hidden bg-gradient-to-br from-amber-700 via-amber-600 to-orange-600 pb-24 pt-16"
+        className="relative overflow-x-hidden bg-gradient-to-br from-amber-700 via-amber-600 to-orange-600 pb-32 pt-14"
         aria-labelledby="hero-heading"
       >
         <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23ffffff\' fill-opacity=\'0.04\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')]" />
         <div className="relative mx-auto max-w-5xl px-4 text-center">
           <h1
             id="hero-heading"
-            className="mb-4 text-4xl font-extrabold tracking-tight text-white sm:text-5xl md:text-6xl"
+            className="mb-3 text-4xl font-extrabold tracking-tight text-white sm:text-5xl md:text-6xl"
           >
             {th("title")} <br />
             <span className="text-amber-200">{th("titleAccent")}</span>
           </h1>
-          <p className="mt-2 mb-6 text-base font-semibold tracking-wide text-amber-300">
+          <p className="mb-3 text-sm font-semibold tracking-wider text-amber-300 uppercase">
             {tNoAds("tagline")}
           </p>
-          <p className="mb-10 text-lg text-amber-100 sm:text-xl">
+          <p className="mb-8 text-base text-amber-100 sm:text-lg">
             {th("subtitle")}
           </p>
           <HotelSearchForm defaultDestination={userCity} />
