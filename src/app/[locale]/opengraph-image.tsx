@@ -1,66 +1,40 @@
 import { ImageResponse } from "next/og";
+import { readFile } from "node:fs/promises";
+import { join } from "node:path";
 
-export const runtime = "edge";
-export const alt = "BookingMole — Find & Compare Hotels Worldwide";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
-export default function OGImage() {
+export default async function OGImage() {
+  const iconData = await readFile(join(process.cwd(), "public/icon-512.png"));
+  const iconSrc = `data:image/png;base64,${iconData.toString("base64")}`;
+
   return new ImageResponse(
     (
       <div
         style={{
-          width: "100%",
-          height: "100%",
           display: "flex",
-          flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
-          background: "linear-gradient(135deg, #b45309 0%, #f59e0b 60%, #fbbf24 100%)",
+          gap: 40,
+          width: "100%",
+          height: "100%",
+          background: "linear-gradient(135deg, #312e81 0%, #4c1d95 100%)",
           fontFamily: "sans-serif",
-          padding: "60px",
         }}
       >
-        <div style={{ fontSize: 110, marginBottom: 24 }}>🏨</div>
-        <div
-          style={{
-            fontSize: 80,
-            fontWeight: 900,
-            color: "white",
-            letterSpacing: "-2px",
-            marginBottom: 16,
-          }}
-        >
-          BookingMole
-        </div>
-        <div
-          style={{
-            fontSize: 30,
-            color: "rgba(255,255,255,0.88)",
-            textAlign: "center",
-            maxWidth: 680,
-          }}
-        >
-          Find & compare hotels worldwide. Real prices.
-        </div>
-        <div
-          style={{
-            position: "absolute",
-            bottom: 48,
-            display: "flex",
-            alignItems: "center",
-            gap: 10,
-            background: "rgba(255,255,255,0.18)",
-            borderRadius: 99,
-            padding: "10px 28px",
-            color: "rgba(255,255,255,0.92)",
-            fontSize: 20,
-          }}
-        >
-          By BurrowSoft · bookingmole.com
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={iconSrc} width={180} height={180} alt="" />
+        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          <span style={{ fontSize: 64, fontWeight: 800, color: "#f8fafc" }}>
+            BookingMole
+          </span>
+          <span style={{ fontSize: 28, color: "#94a3b8" }}>
+            Clean Search. No Ads. No Sign-Up.
+          </span>
         </div>
       </div>
     ),
-    size
+    { ...size }
   );
 }
