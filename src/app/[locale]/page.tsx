@@ -1,4 +1,3 @@
-import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
@@ -6,13 +5,7 @@ import { HotelSearchForm } from "@/components/HotelSearchForm";
 import { Price } from "@/components/Price";
 import { AdUnit } from "@/components/AdUnit";
 import { POPULAR_DESTINATIONS } from "@/lib/data";
-import { SITE_NAME, SITE_DESCRIPTION, SITE_URL } from "@/lib/seo";
-
-export const metadata: Metadata = {
-  title: `${SITE_NAME} — Compare & Book Hotels Worldwide`,
-  description: SITE_DESCRIPTION,
-  alternates: { canonical: SITE_URL },
-};
+import { SITE_NAME, SITE_DESCRIPTION } from "@/lib/seo";
 
 const features = [
   {
@@ -60,6 +53,7 @@ export default async function HomePage() {
   const featured = POPULAR_DESTINATIONS.slice(0, 8);
   const th = await getTranslations("hero");
   const ts = await getTranslations("stats");
+  const tNoAds = await getTranslations("noAds");
 
   // Vercel sets x-vercel-ip-city automatically based on the user's IP
   const hdrs = await headers();
@@ -82,6 +76,9 @@ export default async function HomePage() {
             {th("title")} <br />
             <span className="text-amber-200">{th("titleAccent")}</span>
           </h1>
+          <p className="mt-2 mb-6 text-base font-semibold tracking-wide text-amber-300">
+            {tNoAds("tagline")}
+          </p>
           <p className="mb-10 text-lg text-amber-100 sm:text-xl">
             {th("subtitle")}
           </p>

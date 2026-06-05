@@ -51,6 +51,8 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
   const { locale } = await params;
+  const tNoAds = await getTranslations("noAds");
+  const tagline = tNoAds("tagline");
 
   const languages = Object.fromEntries(
     routing.locales.map((l) => [
@@ -66,7 +68,7 @@ export async function generateMetadata({
       default: `${SITE_NAME} — Compare & Book Hotels Worldwide`,
       template: `%s | ${SITE_NAME}`,
     },
-    description: SITE_DESCRIPTION,
+    description: `${tagline} — ${SITE_DESCRIPTION}`,
     keywords: [
       "cheap hotels", "book hotels", "compare hotels", "hotel deals",
       "hotel booking", "best hotel prices", "discount hotels",
@@ -180,7 +182,7 @@ export default async function LocaleLayout({
           <CurrencyProvider currency={currency}>
             <main>{children}</main>
           </CurrencyProvider>
-          <RegionalFloatingAd />
+          {/* <RegionalFloatingAd /> — archived: No Ads campaign */}
 
           <footer className="mt-16 border-t border-slate-200 bg-white">
             <div className="mx-auto max-w-7xl px-4 py-10">
