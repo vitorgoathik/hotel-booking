@@ -6,15 +6,59 @@ export interface HotelAffiliateLink {
 }
 
 interface HotelSearchParams {
-  destination: string;  // city name e.g. "Bangkok"
-  checkin: string;      // YYYY-MM-DD
-  checkout: string;     // YYYY-MM-DD
+  destination: string;   // city name e.g. "Bangkok"
+  checkin: string;       // YYYY-MM-DD
+  checkout: string;      // YYYY-MM-DD
   guests: number;
   rooms: number;
-  country: string;      // ISO-3166-1 visitor country (reserved for future geo-gating)
+  country: string;       // ISO-3166-1 visitor country (kept for future use)
 }
 
+// Asian city names — Trip.com has real hotel inventory for these destinations
+const ASIAN_CITIES = new Set([
+  // Thailand
+  "bangkok","phuket","chiang mai","pattaya","hua hin","koh samui","krabi","koh phi phi",
+  "ayutthaya","chiang rai","kanchanaburi","sukhothai","pai","udon thani","khon kaen",
+  // Japan
+  "tokyo","osaka","kyoto","hiroshima","nagoya","sapporo","fukuoka","nara","okinawa",
+  "hakone","nikko","yokohama","kobe","sendai","nagasaki","kumamoto","kanazawa",
+  // South Korea
+  "seoul","busan","jeju","incheon","daegu","gyeongju","jeonju",
+  // Singapore
+  "singapore",
+  // Malaysia
+  "kuala lumpur","penang","langkawi","kota kinabalu","malacca","johor bahru","ipoh",
+  // Indonesia
+  "bali","jakarta","yogyakarta","lombok","surabaya","medan","makassar","bandung","ubud",
+  // Philippines
+  "manila","cebu","boracay","palawan","davao","el nido","coron",
+  // Vietnam
+  "ho chi minh city","hanoi","da nang","hoi an","nha trang","phu quoc","hue","ha long",
+  "sapa","da lat","can tho","vung tau",
+  // Cambodia / Laos / Myanmar
+  "siem reap","phnom penh","vientiane","luang prabang","yangon","mandalay","bagan",
+  // China
+  "beijing","shanghai","guangzhou","shenzhen","chengdu","xian","hangzhou","guilin",
+  "chongqing","kunming","zhangjiajie","huangshan","suzhou","nanjing","wuhan","qingdao",
+  // Taiwan
+  "taipei","taichung","kaohsiung","tainan",
+  // Hong Kong / Macau
+  "hong kong","macau",
+  // India
+  "mumbai","delhi","new delhi","goa","jaipur","agra","varanasi","bangalore","chennai",
+  "hyderabad","kolkata","cochin","amritsar","udaipur","mysore","pondicherry",
+  // Sri Lanka / Nepal / Bangladesh / Pakistan
+  "colombo","kandy","kathmandu","pokhara","dhaka","lahore","islamabad","karachi",
+]);
+
+function isAsianDestination(destination: string): boolean {
+  return ASIAN_CITIES.has(destination.toLowerCase().trim());
+}
+
+// ── Affiliate configs ──────────────────────────────────────────────────────────
+
 const AFFILIATES: Array<HotelAffiliateLink & {
+  showFor: (p: HotelSearchParams) => boolean;
   buildUrl: (p: HotelSearchParams) => string;
 }> = [
   {
@@ -22,6 +66,7 @@ const AFFILIATES: Array<HotelAffiliateLink & {
     name: "Expedia",
     description: "Compare hotels with free cancellation options",
     url: "",
+    showFor: () => true,
     buildUrl: ({ destination, checkin, checkout, guests, rooms }) => {
       const params = new URLSearchParams({
         destination,
@@ -43,15 +88,49 @@ const AFFILIATES: Array<HotelAffiliateLink & {
       return `https://www.expedia.com/Hotel-Search?${params}`;
     },
   },
-  // ── Future partners ───────────────────────────────────────────────────────────
-  // Agoda: add once affiliate approval received (agoda.p.rapidapi.com available)
-  // Trip.com: no public RapidAPI; requires internal numeric city IDs — revisit
-  //   once Trip.com developer portal access is obtained.
+  {
+    id: "tripcom",
+    name: "Trip.com",
+    description: "Great deals on hotels across Asia",
+    url: "",
+    // Only show for Asian destinations — Trip.com has thin inventory for EU/US cities
+    showFor: ({ destination }) => isAsianDestination(destination),
+    buildUrl: ({ destination, checkin, checkout, guests, rooms }) => {
+      const params = new URLSearchParams({
+        display: destination,
+        optionType: "City",
+        optionName: destination,
+        checkIn: checkin,
+        checkOut: checkout,
+        adult: String(guests),
+        room: String(rooms),
+        Allianceid: "8495775",
+        SID: "316966000",
+        trip_sub1: "",
+        trip_sub3: "D17566096",
+      });
+      return `https://www.trip.com/hotels/list?${params}`;
+    },
+  },
+
+  // ── Country-specific partners (add future ones here) ──────────────────────
+  // {
+  //   id: "agoda",
+  //   name: "Agoda",
+  //   description: "Best prices in Asia",
+  //   url: "",
+  //   showFor: ({ destination }) => isAsianDestination(destination),
+  //   buildUrl: (...) => ...
+  // },
 ];
 
+// ── Public API ─────────────────────────────────────────────────────────────────
+
 export function buildHotelAffiliateLinks(params: HotelSearchParams): HotelAffiliateLink[] {
-  return AFFILIATES.map(({ buildUrl, ...rest }) => ({
-    ...rest,
-    url: buildUrl(params),
-  }));
+  return AFFILIATES
+    .filter(a => a.showFor(params))
+    .map(({ showFor, buildUrl, ...rest }) => ({
+      ...rest,
+      url: buildUrl(params),
+    }));
 }

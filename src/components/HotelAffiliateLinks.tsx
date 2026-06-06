@@ -1,6 +1,6 @@
 "use client";
 
-import { buildHotelAffiliateLinks } from "@burrowsoft/shared";
+import { buildHotelAffiliateLinks, ExternalLinkIcon } from "@burrowsoft/shared";
 
 interface Props {
   destination: string;
@@ -33,10 +33,7 @@ export function HotelAffiliateLinks({ destination, checkin, checkout, guests, ro
             </div>
             <div className="flex items-center gap-1.5 text-sm font-medium text-blue-600 transition-all group-hover:gap-2.5">
               Search
-              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                  d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-              </svg>
+              <ExternalLinkIcon className="h-4 w-4" />
             </div>
           </a>
         ))}

@@ -16,19 +16,13 @@ import { getMessages, getTranslations } from "next-intl/server";
 import { SITE_NAME, SITE_DESCRIPTION, SITE_URL, websiteJsonLd } from "@/lib/seo";
 import { getCurrencyForCountry } from "@/lib/currency";
 import { CurrencyProvider } from "@/components/CurrencyProvider";
-import { RegionalFloatingAd } from "@burrowsoft/shared";
-import { detectCountry } from "@burrowsoft/shared";
+import { detectCountry, AppHeader, AppFooter } from "@burrowsoft/shared";
 import { Link } from "@/i18n/navigation";
 import { LocaleSelector } from "@/components/LocaleSelector";
 import { routing } from "@/i18n/routing";
 import "../globals.css";
 
-const sarabun = Sarabun({
-  subsets: ["thai", "latin"],
-  weight: ["400", "600", "700"],
-  variable: "--font-sarabun",
-  display: "swap",
-});
+const sarabun = Sarabun({ subsets: ["thai", "latin"], weight: ["400", "600", "700"], variable: "--font-sarabun", display: "swap" });
 const notoJP = Noto_Sans_JP({ subsets: ["latin"], weight: ["400", "700"], variable: "--font-noto-jp", display: "swap" });
 const notoSC = Noto_Sans_SC({ subsets: ["latin"], weight: ["400", "700"], variable: "--font-noto-sc", display: "swap" });
 const notoTC = Noto_Sans_TC({ subsets: ["latin"], weight: ["400", "700"], variable: "--font-noto-tc", display: "swap" });
@@ -56,10 +50,7 @@ export async function generateMetadata({
   const tagline = tNoAds("tagline");
 
   const languages = Object.fromEntries(
-    routing.locales.map((l) => [
-      l,
-      l === "en" ? `${BASE}/` : `${BASE}/${l}/`,
-    ])
+    routing.locales.map((l) => [l, l === "en" ? `${BASE}/` : `${BASE}/${l}/`])
   );
   languages["x-default"] = `${BASE}/`;
 
@@ -70,13 +61,9 @@ export async function generateMetadata({
       template: `%s | ${SITE_NAME}`,
     },
     description: `${tagline} — ${SITE_DESCRIPTION}`,
-    keywords: [
-      "cheap hotels", "book hotels", "compare hotels", "hotel deals",
-      "hotel booking", "best hotel prices", "discount hotels",
-      "last minute hotels", "vacation rentals",
-    ],
-    authors:  [{ name: SITE_NAME }],
-    creator:  SITE_NAME,
+    keywords: ["cheap hotels","book hotels","compare hotels","hotel deals","hotel booking","best hotel prices","discount hotels","last minute hotels","vacation rentals"],
+    authors: [{ name: SITE_NAME }],
+    creator: SITE_NAME,
     openGraph: {
       type: "website",
       locale: locale.replace("-", "_"),
@@ -94,17 +81,7 @@ export async function generateMetadata({
       canonical: locale === "en" ? `${BASE}/` : `${BASE}/${locale}/`,
       languages,
     },
-    robots: {
-      index: true,
-      follow: true,
-      googleBot: {
-        index: true,
-        follow: true,
-        "max-video-preview": -1,
-        "max-image-preview": "large",
-        "max-snippet": -1,
-      },
-    },
+    robots: { index: true, follow: true, googleBot: { index: true, follow: true, "max-video-preview": -1, "max-image-preview": "large", "max-snippet": -1 } },
   };
 }
 
@@ -126,13 +103,11 @@ export default async function LocaleLayout({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
-  const hdrs     = await headers();
-  const country  = detectCountry(Object.fromEntries(hdrs.entries()));
+  const hdrs = await headers();
+  const country = detectCountry(Object.fromEntries(hdrs.entries()));
   const currency = getCurrencyForCountry(country);
   const messages = await getMessages();
-  const t        = await getTranslations("nav");
-  const tf       = await getTranslations("footer");
-
+  const t = await getTranslations("nav");
   const fontClass = LOCALE_FONT_CLASS[locale] ?? "";
 
   return (
@@ -154,109 +129,72 @@ export default async function LocaleLayout({
       </head>
       <body className={`min-h-screen bg-slate-50 text-slate-900 antialiased ${fontClass}`}>
         <NextIntlClientProvider messages={messages}>
-          <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/95 backdrop-blur">
-            <nav
-              className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3"
-              aria-label="Main navigation"
-            >
+          <AppHeader
+            logo={
               <Link href="/" className="flex items-center gap-2">
-                <Image
-                  src="/booking.png"
-                  alt={SITE_NAME}
-                  width={40}
-                  height={40}
-                  className="shrink-0"
-                  priority
-                />
+                <Image src="/booking.png" alt={SITE_NAME} width={40} height={40} className="shrink-0" priority />
                 <span className="text-xl font-bold text-amber-600">{SITE_NAME}</span>
               </Link>
+            }
+            right={
               <div className="flex items-center gap-4">
                 <div className="hidden sm:flex items-center gap-6 text-sm font-medium text-slate-600">
                   <Link href="/hotels/paris" className="hover:text-amber-600 transition-colors">
                     {t("popularDestinations")}
                   </Link>
-                  <Link
-                    href="/search?destination=Paris&checkin=2025-12-25&checkout=2025-12-28&guests=2&rooms=1"
-                    className="hover:text-amber-600 transition-colors"
-                  >
+                  <Link href="/search?destination=Paris&checkin=2025-12-25&checkout=2025-12-28&guests=2&rooms=1" className="hover:text-amber-600 transition-colors">
                     {t("deals")}
                   </Link>
                 </div>
                 <LocaleSelector />
               </div>
-            </nav>
-          </header>
+            }
+          />
 
           <CurrencyProvider currency={currency}>
             <main>{children}</main>
           </CurrencyProvider>
-          {/* <RegionalFloatingAd /> — archived: No Ads campaign */}
 
-          <footer className="mt-16 border-t border-slate-200 bg-white">
-            <div className="mx-auto max-w-7xl px-4 py-10">
-              <div className="grid grid-cols-2 gap-8 sm:grid-cols-4">
-                <div>
-                  <h3 className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
-                    {t("popularDestinations")}
-                  </h3>
-                  <ul className="space-y-2 text-sm text-slate-600">
-                    <li><Link href="/hotels/paris" className="hover:text-amber-600">Hotels in Paris</Link></li>
-                    <li><Link href="/hotels/new-york" className="hover:text-amber-600">Hotels in New York</Link></li>
-                    <li><Link href="/hotels/tokyo" className="hover:text-amber-600">Hotels in Tokyo</Link></li>
-                    <li><Link href="/hotels/london" className="hover:text-amber-600">Hotels in London</Link></li>
-                  </ul>
-                </div>
-                <div>
-                  <h3 className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
-                    More Destinations
-                  </h3>
-                  <ul className="space-y-2 text-sm text-slate-600">
-                    <li><Link href="/hotels/dubai" className="hover:text-amber-600">Hotels in Dubai</Link></li>
-                    <li><Link href="/hotels/bali" className="hover:text-amber-600">Hotels in Bali</Link></li>
-                    <li><Link href="/hotels/barcelona" className="hover:text-amber-600">Hotels in Barcelona</Link></li>
-                    <li><Link href="/hotels/singapore" className="hover:text-amber-600">Hotels in Singapore</Link></li>
-                  </ul>
-                </div>
-                <div>
-                  <h3 className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
-                    Help
-                  </h3>
-                  <ul className="space-y-2 text-sm text-slate-600">
-                    <li><span className="text-slate-400">Cancellation policy</span></li>
-                    <li><span className="text-slate-400">Travel insurance</span></li>
-                    <li><span className="text-slate-400">Group bookings</span></li>
-                    <li><a href="mailto:support@bookingmole.com" className="hover:text-amber-600 transition-colors">support@bookingmole.com</a></li>
-                  </ul>
-                </div>
-                <div>
-                  <p className="text-sm font-bold text-amber-600">{SITE_NAME}</p>
-                  <p className="mt-1 text-xs text-slate-400">{tf("tagline")}</p>
-                </div>
+          <AppFooter
+            supportEmail="support@bookingmole.com"
+            accentHoverClass="hover:text-amber-600"
+            currentSite="BookingMole"
+          >
+            <div className="grid grid-cols-2 gap-8 pb-4 sm:grid-cols-3">
+              <div>
+                <h3 className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
+                  {t("popularDestinations")}
+                </h3>
+                <ul className="space-y-2 text-sm text-slate-600">
+                  <li><Link href="/hotels/paris" className="hover:text-amber-600">Hotels in Paris</Link></li>
+                  <li><Link href="/hotels/new-york" className="hover:text-amber-600">Hotels in New York</Link></li>
+                  <li><Link href="/hotels/tokyo" className="hover:text-amber-600">Hotels in Tokyo</Link></li>
+                  <li><Link href="/hotels/london" className="hover:text-amber-600">Hotels in London</Link></li>
+                </ul>
               </div>
-
-              <div className="mt-8 border-t border-slate-100 pt-6">
-                <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-                  <a
-                    href="https://burrowsoft.com"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-2 text-slate-600 hover:text-slate-900 transition-colors"
-                  >
-                    <Image src="/base.png" alt="BurrowSoft" width={28} height={28} className="shrink-0" />
-                    <span className="text-sm font-bold tracking-tight">BurrowSoft</span>
-                  </a>
-                  <ul className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs text-slate-500">
-                    <li><a href="https://flymole.com" target="_blank" rel="noopener noreferrer" className="hover:text-amber-600 transition-colors">FlyMole</a></li>
-                    <li><a href="https://insightmole.com" target="_blank" rel="noopener noreferrer" className="hover:text-amber-600 transition-colors">InsightMole</a></li>
-                    <li><a href="https://rentacarmole.com" target="_blank" rel="noopener noreferrer" className="hover:text-amber-600 transition-colors">RentACarMole</a></li>
-                    <li><a href="https://gamesmole.com" target="_blank" rel="noopener noreferrer" className="hover:text-amber-600 transition-colors">GamesMole</a></li>
-                    <li><a href="https://shoppingmole.com" target="_blank" rel="noopener noreferrer" className="hover:text-amber-600 transition-colors">ShoppingMole</a></li>
-                  </ul>
-                  <p className="text-xs text-slate-400">{tf("copyright")}</p>
-                </div>
+              <div>
+                <h3 className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
+                  More Destinations
+                </h3>
+                <ul className="space-y-2 text-sm text-slate-600">
+                  <li><Link href="/hotels/dubai" className="hover:text-amber-600">Hotels in Dubai</Link></li>
+                  <li><Link href="/hotels/bali" className="hover:text-amber-600">Hotels in Bali</Link></li>
+                  <li><Link href="/hotels/barcelona" className="hover:text-amber-600">Hotels in Barcelona</Link></li>
+                  <li><Link href="/hotels/singapore" className="hover:text-amber-600">Hotels in Singapore</Link></li>
+                </ul>
+              </div>
+              <div>
+                <h3 className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-400">Help</h3>
+                <ul className="space-y-2 text-sm text-slate-600">
+                  <li><span className="text-slate-400">Cancellation policy</span></li>
+                  <li><span className="text-slate-400">Travel insurance</span></li>
+                  <li><span className="text-slate-400">Group bookings</span></li>
+                </ul>
               </div>
             </div>
-          </footer>
+          </AppFooter>
+
+          {/* <RegionalFloatingAd /> — archived: No Ads campaign */}
           <Analytics />
         </NextIntlClientProvider>
       </body>
