@@ -7,7 +7,7 @@ const nextConfig: NextConfig = {
   experimental: {
     cpus: 1, // Limit concurrent SSG workers — prevents OOM on Windows dev builds
   },
-  transpilePackages: ["@burrowsoft/ui"],
+  transpilePackages: ["@burrowsoft/shared"],
   images: {
     remotePatterns: [{ protocol: "https", hostname: "cf.bstatic.com" }],
   },
