@@ -49,7 +49,7 @@ export async function generateMetadata({
   const hdrs = await headers();
   const country = detectCountry(Object.fromEntries(hdrs.entries()));
   const countryName = getCountryName(country);
-  const desc = `Looking for hotels in ${countryName}? BookingMole compares Booking.com, Agoda & more. No sign-up. No hidden fees. Best deals in seconds.`;
+  const desc = `Clean Search. NO ADS. No sign-up. Looking for hotels in ${countryName}? BookingMole compares Booking.com, Agoda & more. No hidden fees. Best deals in seconds.`;
 
   const languages = Object.fromEntries(
     routing.locales.map((l) => [l, l === "en" ? `${BASE}/` : `${BASE}/${l}/`])
