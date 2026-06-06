@@ -16,7 +16,7 @@ import { getMessages, getTranslations } from "next-intl/server";
 import { SITE_NAME, SITE_DESCRIPTION, SITE_URL, websiteJsonLd } from "@/lib/seo";
 import { getCurrencyForCountry } from "@/lib/currency";
 import { CurrencyProvider } from "@/components/CurrencyProvider";
-import { detectCountry, AppHeader, AppFooter } from "@burrowsoft/shared";
+import { detectCountry, getCountryName, AppHeader, AppFooter } from "@burrowsoft/shared";
 import { Link } from "@/i18n/navigation";
 import { LocaleSelector } from "@/components/LocaleSelector";
 import { routing } from "@/i18n/routing";
@@ -46,8 +46,10 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
   const { locale } = await params;
-  const tNoAds = await getTranslations("noAds");
-  const tagline = tNoAds("tagline");
+  const hdrs = await headers();
+  const country = detectCountry(Object.fromEntries(hdrs.entries()));
+  const countryName = getCountryName(country);
+  const desc = `Looking for hotels in ${countryName}? BookingMole compares Booking.com, Agoda & more. No sign-up. No hidden fees. Best deals in seconds.`;
 
   const languages = Object.fromEntries(
     routing.locales.map((l) => [l, l === "en" ? `${BASE}/` : `${BASE}/${l}/`])
@@ -57,10 +59,10 @@ export async function generateMetadata({
   return {
     metadataBase: new URL(SITE_URL),
     title: {
-      default: `${SITE_NAME} — Compare & Book Hotels Worldwide`,
-      template: `%s | ${SITE_NAME}`,
+      default: `Hotel Search in ${countryName} — BookingMole`,
+      template: `%s | BookingMole`,
     },
-    description: `${tagline} — ${SITE_DESCRIPTION}`,
+    description: desc,
     keywords: ["cheap hotels","book hotels","compare hotels","hotel deals","hotel booking","best hotel prices","discount hotels","last minute hotels","vacation rentals"],
     authors: [{ name: SITE_NAME }],
     creator: SITE_NAME,
@@ -69,13 +71,13 @@ export async function generateMetadata({
       locale: locale.replace("-", "_"),
       url: locale === "en" ? `${BASE}/` : `${BASE}/${locale}/`,
       siteName: SITE_NAME,
-      title: `${SITE_NAME} — Compare & Book Hotels Worldwide`,
-      description: SITE_DESCRIPTION,
+      title: `Hotel Search in ${countryName} — BookingMole`,
+      description: desc,
     },
     twitter: {
       card: "summary_large_image",
-      title: `${SITE_NAME} — Compare & Book Hotels Worldwide`,
-      description: SITE_DESCRIPTION,
+      title: `Hotel Search in ${countryName} — BookingMole`,
+      description: desc,
     },
     alternates: {
       canonical: locale === "en" ? `${BASE}/` : `${BASE}/${locale}/`,
