@@ -59,8 +59,8 @@ export async function generateMetadata({
   return {
     metadataBase: new URL(SITE_URL),
     title: {
-      default: `Hotel Search in ${countryName} — BookingMole`,
-      template: `%s | BookingMole`,
+      default: `Hotel Search in ${countryName} — Booking Mole`,
+      template: `%s | Booking Mole`,
     },
     description: desc,
     keywords: ["cheap hotels","book hotels","compare hotels","hotel deals","hotel booking","best hotel prices","discount hotels","last minute hotels","vacation rentals"],
@@ -71,12 +71,12 @@ export async function generateMetadata({
       locale: locale.replace("-", "_"),
       url: locale === "en" ? `${BASE}/` : `${BASE}/${locale}/`,
       siteName: SITE_NAME,
-      title: `Hotel Search in ${countryName} — BookingMole`,
+      title: `Hotel Search in ${countryName} — Booking Mole`,
       description: desc,
     },
     twitter: {
       card: "summary_large_image",
-      title: `Hotel Search in ${countryName} — BookingMole`,
+      title: `Hotel Search in ${countryName} — Booking Mole`,
       description: desc,
     },
     alternates: {
